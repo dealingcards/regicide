@@ -336,6 +336,21 @@ button.muted{opacity:.5;}
   font-family:var(--body); font-size:1rem; line-height:1.5; white-space:pre-wrap; text-align:center;
 }
 #endStats{font-size:.9rem; opacity:.85; margin-top:10px;}
+.lb-section{margin-top:14px; border-top:1px dashed rgba(43,32,24,.35); padding-top:10px;}
+.lb-section h3{font-family:var(--display); font-weight:400; font-size:1.3rem; color:#6e3b14; margin-bottom:6px;}
+.lb-submit{display:flex; gap:8px; justify-content:center; margin-bottom:10px; flex-wrap:wrap;}
+.lb-submit input{
+  font-family:var(--body); font-size:.95rem; padding:8px 12px; width:180px;
+  border:1px solid #8a6d2c; border-radius:6px; background:#faf3e1; color:var(--ink);
+}
+.lb-submit input:focus-visible{outline:3px solid var(--gilt-bright); outline-offset:1px;}
+.lb-board{max-width:380px; margin:0 auto; text-align:left; font-size:.95rem;}
+.lb-row{display:flex; gap:8px; padding:3px 8px; border-radius:5px; align-items:baseline;}
+.lb-row.me{background:rgba(201,155,63,.25); font-weight:600;}
+.lb-row .r{width:2em; text-align:right; opacity:.7;}
+.lb-row .n{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.lb-row .s{white-space:nowrap;}
+.lb-note{font-size:.82rem; opacity:.75; text-align:center; margin-top:6px;}
 /* ---------- genre cursors ---------- */
 html, body{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Cpolygon%20points%3D%222%2C2%209.5%2C4.5%2022%2C17%2017%2C22%204.5%2C9.5%22%20fill%3D%22%23cdd3dc%22%20stroke%3D%22%234d5563%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%223%22%20y1%3D%223%22%20x2%3D%2219%22%20y2%3D%2219%22%20stroke%3D%22%23f2f5f9%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%2213.5%22%20y1%3D%2225.5%22%20x2%3D%2225.5%22%20y2%3D%2213.5%22%20stroke%3D%22%23c99b3f%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2226%22%20y2%3D%2226%22%20stroke%3D%22%236b4423%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2227.3%22%20cy%3D%2227.3%22%20r%3D%222.5%22%20fill%3D%22%23e8c46a%22%20stroke%3D%22%236e521b%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E") 2 2, auto;}
 button, .card, label.toggle, input[type="checkbox"], .immune-ribbon, .pile-cards, .jester-card{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Cpolygon%20points%3D%222%2C2%209.5%2C4.5%2022%2C17%2017%2C22%204.5%2C9.5%22%20fill%3D%22%23f0d68a%22%20stroke%3D%22%238a6d2c%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%223%22%20y1%3D%223%22%20x2%3D%2219%22%20y2%3D%2219%22%20stroke%3D%22%23fff7dd%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%2213.5%22%20y1%3D%2225.5%22%20x2%3D%2225.5%22%20y2%3D%2213.5%22%20stroke%3D%22%23c99b3f%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2226%22%20y2%3D%2226%22%20stroke%3D%22%236b4423%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2227.3%22%20cy%3D%2227.3%22%20r%3D%222.5%22%20fill%3D%22%23e8c46a%22%20stroke%3D%22%236e521b%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E") 2 2, pointer;}
@@ -473,6 +488,15 @@ button:disabled{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2F
     <p id="endText"></p>
     <pre class="share-preview" id="sharePreview"></pre>
     <p id="endStats"></p>
+    <div class="lb-section hidden" id="lbSection">
+      <h3>Today's Leaderboard</h3>
+      <div class="lb-submit">
+        <input id="lbName" maxlength="20" placeholder="Your name" aria-label="Name for the leaderboard">
+        <button class="primary" id="lbSubmitBtn">Submit score</button>
+      </div>
+      <div class="lb-board" id="lbBoard"></div>
+      <p class="lb-note">Daily Castle scores only — everyone faces the same shuffle.</p>
+    </div>
     <div class="row">
       <button class="primary" id="shareBtn">Share result</button>
       <button id="challengeBtn" title="Copy a link that deals this exact castle to a friend">Copy challenge link</button>
@@ -495,6 +519,13 @@ const IMMUNE_TEXT = {
   '♠':"your Spades won't shield you"
 };
 const HAND_MAX = 8;
+
+/* ---------- global leaderboard (optional) ----------
+   Paste your Cloudflare Worker URL between the quotes to switch the
+   Daily Castle leaderboard on, e.g.:
+   const LEADERBOARD_URL = 'https://regicide-leaderboard.donsibley01.workers.dev';
+   Leave it empty ('') and the leaderboard UI stays hidden. */
+const LEADERBOARD_URL = '';
 
 /* ---------- audio engine (all synthesized, no files) ---------- */
 const A = (() => {
@@ -930,6 +961,47 @@ function shareText(){
   const jest='🃏'.repeat(S.jesters)+'▪️'.repeat(2-S.jesters);
   return `${head}\n${outcome} ${jest}\n${grid}`;
 }
+function lbStoredName(){ try{ return localStorage.getItem('regicide-name')||''; }catch(e){ return ''; } }
+function lbRemember(name){ try{ localStorage.setItem('regicide-name',name); }catch(e){} }
+function lbAlreadySubmitted(){ try{ return !!localStorage.getItem('regicide-lb-'+S.dailyNum); }catch(e){ return false; } }
+function lbMarkSubmitted(){ try{ localStorage.setItem('regicide-lb-'+S.dailyNum,'1'); }catch(e){} }
+function lbEntryLabel(e){
+  return e.won ? ['🥉 Bronze','🥈 Silver','🥇 Gold'][e.jesters] : `⚔️ ${e.slain}/12`;
+}
+function renderBoard(entries, me){
+  const el=$('lbBoard');
+  if(!entries || entries.length===0){ el.innerHTML='<p style="text-align:center;opacity:.7">No scores yet today — be the first!</p>'; return; }
+  el.innerHTML=entries.map((e,i)=>
+    `<div class="lb-row${me && e.name.toLowerCase()===me.toLowerCase()?' me':''}">
+       <span class="r">${i+1}.</span><span class="n">${e.name.replace(/[<>&]/g,'')}</span><span class="s">${lbEntryLabel(e)}</span>
+     </div>`).join('');
+}
+async function lbFetch(){
+  try{
+    const r=await fetch(`${LEADERBOARD_URL}/board?day=${S.dailyNum}`);
+    const d=await r.json();
+    renderBoard(d.entries, lbStoredName());
+  }catch(e){ $('lbBoard').innerHTML='<p style="text-align:center;opacity:.7">Couldn\'t reach the leaderboard.</p>'; }
+}
+async function lbSubmit(){
+  const name=$('lbName').value.replace(/[^\w \-'.]/g,'').trim().slice(0,20);
+  if(!name){ $('lbName').focus(); return; }
+  lbRemember(name);
+  const btn=$('lbSubmitBtn');
+  btn.disabled=true; btn.textContent='Sending…';
+  try{
+    const r=await fetch(`${LEADERBOARD_URL}/score`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({day:S.dailyNum, name, slain:S.slain, won:S.castle.length===0, jesters:S.jesters})
+    });
+    const d=await r.json();
+    if(d.ok){
+      lbMarkSubmitted();
+      btn.textContent = d.rank ? `Submitted — rank #${d.rank}` : 'Submitted ✓';
+      renderBoard(d.entries, name);
+    } else { btn.disabled=false; btn.textContent='Try again'; }
+  }catch(e){ btn.disabled=false; btn.textContent='Try again'; }
+}
 function fillEndExtras(){
   $('sharePreview').textContent=shareText();
   const s=store.get();
@@ -938,6 +1010,16 @@ function fillEndExtras(){
   } else $('endStats').textContent='';
   $('shareBtn').textContent='Share result';
   $('challengeBtn').textContent='Copy challenge link';
+  const lbOn = LEADERBOARD_URL && S.mode==='daily' && S.dailyNum;
+  $('lbSection').classList.toggle('hidden', !lbOn);
+  if(lbOn){
+    $('lbName').value=lbStoredName();
+    const done=lbAlreadySubmitted();
+    $('lbSubmitBtn').disabled=done;
+    $('lbSubmitBtn').textContent=done?'Submitted ✓':'Submit score';
+    $('lbBoard').innerHTML='<p style="text-align:center;opacity:.7">Loading…</p>';
+    lbFetch();
+  }
 }
 async function copyText(txt, btn, done){
   try{
@@ -1331,6 +1413,7 @@ $('introDailyBtn').addEventListener('click',()=>{
   const d=dailyInfo(); freshStart(d.seed,'daily');
 });
 $('shareBtn').addEventListener('click',()=>copyText(shareText(), $('shareBtn'), 'Copied!'));
+$('lbSubmitBtn').addEventListener('click',lbSubmit);
 $('challengeBtn').addEventListener('click',()=>{
   let url;
   try{ url=location.origin+location.pathname+'?seed='+S.seed; }
