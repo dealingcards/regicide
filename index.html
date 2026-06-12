@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Regicide — Slay the Corrupted Court</title>
+<meta name="description" content="A free solo card game of doomed heroics: battle 12 corrupted royals armed only with a deck of cards. Play the daily castle and share your result.">
+<meta name="theme-color" content="#43121d">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Regicide — Slay the Corrupted Court">
+<meta property="og:description" content="Battle 12 corrupted royals armed only with a deck of cards. Same daily castle for everyone — can you reach a Gold victory?">
+<!-- When hosted, add: <meta property="og:image" content="https://your-domain/preview.png"> and og:url -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2343121d'/%3E%3Cpath d='M6 24 L6 11 L12 17 L16 7 L20 17 L26 11 L26 24 Z' fill='%23e8c46a' stroke='%236e521b' stroke-width='1.4'/%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap');
 
@@ -322,6 +329,18 @@ button.muted{opacity:.5;}
   .card .mid{font-size:1.6rem;}
   .enemy-card{width:170px; height:245px;}
 }
+
+.share-preview{
+  background:rgba(67,18,29,.12); border:1px dashed rgba(110,59,20,.5); border-radius:8px;
+  padding:10px 14px; margin:12px auto 0; max-width:340px;
+  font-family:var(--body); font-size:1rem; line-height:1.5; white-space:pre-wrap; text-align:center;
+}
+#endStats{font-size:.9rem; opacity:.85; margin-top:10px;}
+/* ---------- genre cursors ---------- */
+html, body{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Cpolygon%20points%3D%222%2C2%209.5%2C4.5%2022%2C17%2017%2C22%204.5%2C9.5%22%20fill%3D%22%23cdd3dc%22%20stroke%3D%22%234d5563%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%223%22%20y1%3D%223%22%20x2%3D%2219%22%20y2%3D%2219%22%20stroke%3D%22%23f2f5f9%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%2213.5%22%20y1%3D%2225.5%22%20x2%3D%2225.5%22%20y2%3D%2213.5%22%20stroke%3D%22%23c99b3f%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2226%22%20y2%3D%2226%22%20stroke%3D%22%236b4423%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2227.3%22%20cy%3D%2227.3%22%20r%3D%222.5%22%20fill%3D%22%23e8c46a%22%20stroke%3D%22%236e521b%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E") 2 2, auto;}
+button, .card, label.toggle, input[type="checkbox"], .immune-ribbon, .pile-cards, .jester-card{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Cpolygon%20points%3D%222%2C2%209.5%2C4.5%2022%2C17%2017%2C22%204.5%2C9.5%22%20fill%3D%22%23f0d68a%22%20stroke%3D%22%238a6d2c%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%223%22%20y1%3D%223%22%20x2%3D%2219%22%20y2%3D%2219%22%20stroke%3D%22%23fff7dd%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%2213.5%22%20y1%3D%2225.5%22%20x2%3D%2225.5%22%20y2%3D%2213.5%22%20stroke%3D%22%23c99b3f%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2226%22%20y2%3D%2226%22%20stroke%3D%22%236b4423%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2227.3%22%20cy%3D%2227.3%22%20r%3D%222.5%22%20fill%3D%22%23e8c46a%22%20stroke%3D%22%236e521b%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E") 2 2, pointer;}
+button:disabled{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Cpolygon%20points%3D%222%2C2%209.5%2C4.5%2022%2C17%2017%2C22%204.5%2C9.5%22%20fill%3D%22%23cdd3dc%22%20stroke%3D%22%234d5563%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%223%22%20y1%3D%223%22%20x2%3D%2219%22%20y2%3D%2219%22%20stroke%3D%22%23f2f5f9%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%2213.5%22%20y1%3D%2225.5%22%20x2%3D%2225.5%22%20y2%3D%2213.5%22%20stroke%3D%22%23c99b3f%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2226%22%20y2%3D%2226%22%20stroke%3D%22%236b4423%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2227.3%22%20cy%3D%2227.3%22%20r%3D%222.5%22%20fill%3D%22%23e8c46a%22%20stroke%3D%22%236e521b%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E") 2 2, not-allowed;}
+.card.small, .discard-top{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Cpolygon%20points%3D%222%2C2%209.5%2C4.5%2022%2C17%2017%2C22%204.5%2C9.5%22%20fill%3D%22%23cdd3dc%22%20stroke%3D%22%234d5563%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%223%22%20y1%3D%223%22%20x2%3D%2219%22%20y2%3D%2219%22%20stroke%3D%22%23f2f5f9%22%20stroke-width%3D%221.2%22%2F%3E%3Cline%20x1%3D%2213.5%22%20y1%3D%2225.5%22%20x2%3D%2225.5%22%20y2%3D%2213.5%22%20stroke%3D%22%23c99b3f%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2226%22%20y2%3D%2226%22%20stroke%3D%22%236b4423%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2227.3%22%20cy%3D%2227.3%22%20r%3D%222.5%22%20fill%3D%22%23e8c46a%22%20stroke%3D%22%236e521b%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E") 2 2, auto;}
 </style>
 </head>
 <body>
@@ -338,6 +357,7 @@ button.muted{opacity:.5;}
     <button class="ghost" id="musicBtn" aria-pressed="true" title="Toggle music">&#9834; Music</button>
     <button class="ghost" id="sfxBtn" aria-pressed="true" title="Toggle sound effects">&#128266; SFX</button>
     <button class="ghost" id="rulesBtn">Rules</button>
+    <button class="ghost" id="dailyBtn" title="The same shuffle for everyone, changing each day">Daily castle</button>
     <button class="ghost" id="restartBtn">New game</button>
   </div>
 </header>
@@ -405,7 +425,11 @@ button.muted{opacity:.5;}
     </div>
     <p>But beware: every royal is <strong>immune to its own suit's power</strong>, and after you strike, it strikes back — you must discard cards worth at least its attack, or fall.</p>
     <p>You carry <strong>two Jesters</strong>: flip one to discard your whole hand and draw 8 fresh cards. And the Jester on your right will whisper tips as you learn. Good hunting.</p>
-    <div class="row"><button class="primary" id="startBtn">Storm the castle</button></div>
+    <div class="row">
+      <button class="primary" id="startBtn">Storm the castle</button>
+      <button id="introDailyBtn">Today's daily castle</button>
+    </div>
+    <p class="center" style="font-size:.85rem; opacity:.75; margin-top:8px;">The daily castle is the same shuffle for every player — compare results with friends.</p>
   </div>
 </div>
 
@@ -447,7 +471,13 @@ button.muted{opacity:.5;}
   <div class="modal center">
     <h2 id="endTitle"></h2>
     <p id="endText"></p>
-    <div class="row"><button class="primary" id="endRestartBtn">Play again</button></div>
+    <pre class="share-preview" id="sharePreview"></pre>
+    <p id="endStats"></p>
+    <div class="row">
+      <button class="primary" id="shareBtn">Share result</button>
+      <button id="challengeBtn" title="Copy a link that deals this exact castle to a friend">Copy challenge link</button>
+      <button id="endRestartBtn">Play again</button>
+    </div>
   </div>
 </div>
 
@@ -577,6 +607,35 @@ const A = (() => {
   return { unlock, sfx, setMusic, setSfx:on=>{sfxOn=on;}, get musicOn(){return musicOn;}, get sfxOn(){return sfxOn;} };
 })();
 
+/* ---------- seeded shuffles & local stats ---------- */
+let rng = Math.random;
+function mulberry32(a){
+  return function(){
+    a|=0; a=a+0x6D2B79F5|0;
+    let t=Math.imul(a^a>>>15, 1|a);
+    t=t+Math.imul(t^t>>>7, 61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+const DAILY_EPOCH = Date.UTC(2026,5,12); // Daily Castle #1
+function dailyInfo(){
+  const now=new Date();
+  const seed=now.getFullYear()*10000+(now.getMonth()+1)*100+now.getDate();
+  const num=Math.floor((Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())-DAILY_EPOCH)/86400000)+1;
+  return {seed, num};
+}
+const store={
+  get(){ try{ return JSON.parse(localStorage.getItem('regicide-stats')||'{}'); }catch(e){ return null; } },
+  set(s){ try{ localStorage.setItem('regicide-stats', JSON.stringify(s)); }catch(e){} }
+};
+function recordResult(win){
+  const s=store.get(); if(s===null) return;
+  s.plays=(s.plays||0)+1;
+  if(win){ s.wins=(s.wins||0)+1; const k=['bronze','silver','gold'][S.jesters]; s[k]=(s[k]||0)+1; }
+  s.best=Math.max(s.best||0, S.slain);
+  store.set(s);
+}
+
 let S = null;            // game state
 let animPrev = {key:-1, hp:null, atk:null};   // for stat pulse/tween
 let seenTips = {};       // one-time tips
@@ -591,9 +650,11 @@ function cardValue(c){
   if (c.rank==='K') return 20;
   return parseInt(c.rank,10);
 }
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-function newGame(){
+function newGame(seed, mode){
+  if(seed==null){ seed=Math.floor(Math.random()*1e9); mode=mode||'free'; }
+  rng=mulberry32(seed);
   const tavern=[], castle=[];
   for(const s of SUITS){
     tavern.push({rank:'A',suit:s});
@@ -605,6 +666,8 @@ function newGame(){
   castle.push(...js,...qs,...ks);
   shuffle(tavern);
   S = {
+    seed, mode:mode||'free',
+    dailyNum: mode==='daily' ? dailyInfo().num : null,
     tavern, discard:[], castle, slain:0,
     hand:[], jesters:2,
     enemy:null, phase:'play',
@@ -616,6 +679,8 @@ function newGame(){
   moodOverride=null; lastArtKey=''; prevPiles={t:-1,d:-1};
   for(let i=0;i<HAND_MAX;i++) draw();
   nextEnemy();
+  if(mode==='daily') log(`⚔ <strong>Daily Castle #${dailyInfo().num}</strong> — the same shuffle for every player today.`);
+  else if(mode==='shared') log(`⚔ <strong>Challenge castle #${seed}</strong> — a shared deal.`);
   log(`You storm the castle. <strong>${enemyTitle()}</strong> bars your way.`);
 }
 
@@ -778,9 +843,10 @@ function checkStuck(){
   return false;
 }
 function outOfCards(){
-  S.over=true; A.sfx.defeat(); render();
+  S.over=true; A.sfx.defeat(); recordResult(false); render();
   $('endTitle').textContent='You Have Fallen';
   $('endText').innerHTML=`Your hand is empty — in solo Regicide there is no yielding, and a hero who cannot play a card has lost. You slew ${S.slain} of 12 royals. The castle holds… this time.`;
+  fillEndExtras();
   $('endModal').classList.remove('hidden');
 }
 
@@ -847,18 +913,57 @@ function confirmDiscard(){
   render();
 }
 
+/* ---------- sharing ---------- */
+function shareText(){
+  const head = S.mode==='daily' ? `Regicide 🏰 Daily Castle #${S.dailyNum}`
+             : S.mode==='shared' ? `Regicide 🏰 Challenge #${S.seed}`
+             : `Regicide 🏰`;
+  const em={'♥':'♥️','♦':'♦️','♣':'♣️','♠':'♠️'};
+  let grid='';
+  for(let i=0;i<12;i++){
+    grid += i<S.slain ? em[S.slainCards[i].suit] : '⬛';
+    if(i===3||i===7) grid+=' ';
+  }
+  const win=S.castle.length===0;
+  const outcome = win ? ['🥉 Bronze victory!','🥈 Silver victory!','🥇 GOLD victory!'][S.jesters]
+                      : `⚔️ Fell at ${S.slain}/12`;
+  const jest='🃏'.repeat(S.jesters)+'▪️'.repeat(2-S.jesters);
+  return `${head}\n${outcome} ${jest}\n${grid}`;
+}
+function fillEndExtras(){
+  $('sharePreview').textContent=shareText();
+  const s=store.get();
+  if(s && s.plays){
+    $('endStats').textContent=`Your record: ${s.plays} raid${s.plays!==1?'s':''} · ${s.wins||0} victor${(s.wins||0)===1?'y':'ies'} (🥇${s.gold||0} 🥈${s.silver||0} 🥉${s.bronze||0}) · best run ${s.best||0}/12`;
+  } else $('endStats').textContent='';
+  $('shareBtn').textContent='Share result';
+  $('challengeBtn').textContent='Copy challenge link';
+}
+async function copyText(txt, btn, done){
+  try{
+    if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){ await navigator.share({text:txt}); return; }
+    await navigator.clipboard.writeText(txt);
+    btn.textContent=done;
+  }catch(e){
+    try{ await navigator.clipboard.writeText(txt); btn.textContent=done; }
+    catch(e2){ btn.textContent='Copy failed — select text above'; }
+  }
+}
+
 /* ---------- end states ---------- */
 function victory(){
-  S.over=true; A.sfx.victory(); render();
+  S.over=true; A.sfx.victory(); recordResult(true); render();
   const medals=['a Bronze victory — hard-won and bloody','a Silver victory','a flawless Gold victory'];
   $('endTitle').textContent='The Court is Slain!';
   $('endText').innerHTML=`All twelve corrupted royals have fallen. With ${S.jesters} Jester${S.jesters!==1?'s':''} unflipped, yours is ${medals[S.jesters]}.`;
+  fillEndExtras();
   $('endModal').classList.remove('hidden');
 }
 function defeat(atk, maxPay){
-  S.over=true; A.sfx.defeat(); render();
+  S.over=true; A.sfx.defeat(); recordResult(false); render();
   $('endTitle').textContent='You Have Fallen';
   $('endText').innerHTML=`${enemyTitle().charAt(0).toUpperCase()+enemyTitle().slice(1)} strikes for ${atk}, but your hand can muster only ${maxPay}. You slew ${S.slain} of 12 royals. The castle holds… this time.`;
+  fillEndExtras();
   $('endModal').classList.remove('hidden');
 }
 
@@ -1214,8 +1319,25 @@ $('discardBtn').addEventListener('click',()=>{ if(S.phase==='defend'&&!S.over&&!
 $('tipsToggle').addEventListener('change',e=>{ tipsOn=e.target.checked; renderTip(); });
 $('rulesBtn').addEventListener('click',()=>$('rulesModal').classList.remove('hidden'));
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal-back').classList.add('hidden')));
-$('restartBtn').addEventListener('click',()=>{ $('log').innerHTML=''; seenTips={}; animPrev={key:-1,hp:null,atk:null}; newGame(); render(); });
-$('endRestartBtn').addEventListener('click',()=>{ $('endModal').classList.add('hidden'); $('log').innerHTML=''; seenTips={}; animPrev={key:-1,hp:null,atk:null}; newGame(); render(); });
+function freshStart(seed, mode){
+  $('log').innerHTML=''; seenTips={}; animPrev={key:-1,hp:null,atk:null};
+  $('endModal').classList.add('hidden');
+  newGame(seed, mode); render();
+}
+$('restartBtn').addEventListener('click',()=>freshStart());
+$('dailyBtn').addEventListener('click',()=>{ const d=dailyInfo(); freshStart(d.seed,'daily'); });
+$('introDailyBtn').addEventListener('click',()=>{
+  $('introModal').classList.add('hidden'); A.unlock();
+  const d=dailyInfo(); freshStart(d.seed,'daily');
+});
+$('shareBtn').addEventListener('click',()=>copyText(shareText(), $('shareBtn'), 'Copied!'));
+$('challengeBtn').addEventListener('click',()=>{
+  let url;
+  try{ url=location.origin+location.pathname+'?seed='+S.seed; }
+  catch(e){ url='?seed='+S.seed; }
+  copyText(url, $('challengeBtn'), 'Link copied!');
+});
+$('endRestartBtn').addEventListener('click',()=>freshStart());
 $('startBtn').addEventListener('click',()=>{ $('introModal').classList.add('hidden'); A.unlock(); });
 $('musicBtn').addEventListener('click',()=>{
   A.unlock(); A.setMusic(!A.musicOn);
@@ -1230,7 +1352,15 @@ $('sfxBtn').addEventListener('click',()=>{
 document.addEventListener('pointerdown',()=>A.unlock(),{once:true});
 document.querySelectorAll('.modal-back').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m && m.id==='rulesModal') m.classList.add('hidden'); }));
 
-newGame();
+(function initialDeal(){
+  let seedParam=null;
+  try{
+    const q=new URLSearchParams(location.search).get('seed');
+    if(q!==null && /^\d+$/.test(q)) seedParam=parseInt(q,10);
+  }catch(e){}
+  if(seedParam!==null) newGame(seedParam,'shared');
+  else newGame();
+})();
 render();
 })();
 </script>
