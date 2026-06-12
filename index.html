@@ -372,6 +372,7 @@ button:disabled{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2F
     <button class="ghost" id="musicBtn" aria-pressed="true" title="Toggle music">&#9834; Music</button>
     <button class="ghost" id="sfxBtn" aria-pressed="true" title="Toggle sound effects">&#128266; SFX</button>
     <button class="ghost" id="rulesBtn">Rules</button>
+    <button class="ghost hidden" id="lbHeaderBtn">Leaderboard</button>
     <button class="ghost" id="dailyBtn" title="The same shuffle for everyone, changing each day">Daily castle</button>
     <button class="ghost" id="restartBtn">New game</button>
   </div>
@@ -482,6 +483,20 @@ button:disabled{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2F
   </div>
 </div>
 
+<div class="modal-back hidden" id="lbModal">
+  <div class="modal center">
+    <h2>Daily Castle Leaderboard</h2>
+    <div class="row" style="margin:4px 0 10px; align-items:center;">
+      <button class="ghost" id="lbPrevBtn" style="color:var(--ink); border-color:#8a6d2c;">◀ Previous day</button>
+      <strong id="lbDayLabel" style="min-width:120px;">Castle #—</strong>
+      <button class="ghost" id="lbNextBtn" style="color:var(--ink); border-color:#8a6d2c;">Next day ▶</button>
+    </div>
+    <div class="lb-board" id="lbModalBoard"></div>
+    <p class="lb-note">Finish today's Daily Castle to add your name.</p>
+    <div class="row"><button class="primary" data-close>Back to battle</button></div>
+  </div>
+</div>
+
 <div class="modal-back hidden" id="endModal">
   <div class="modal center">
     <h2 id="endTitle"></h2>
@@ -523,7 +538,7 @@ const HAND_MAX = 8;
 /* ---------- global leaderboard (optional) ----------
    Paste your Cloudflare Worker URL between the quotes to switch the
    Daily Castle leaderboard on, e.g.:
-   const LEADERBOARD_URL = 'https://regicide-leaderboard.donsibley01.workers.dev';
+   const LEADERBOARD_URL = 'https://regicide-leaderboard.yourname.workers.dev';
    Leave it empty ('') and the leaderboard UI stays hidden. */
 const LEADERBOARD_URL = 'https://regicide-leaderboard.donsibley01.workers.dev';
 
@@ -968,8 +983,7 @@ function lbMarkSubmitted(){ try{ localStorage.setItem('regicide-lb-'+S.dailyNum,
 function lbEntryLabel(e){
   return e.won ? ['🥉 Bronze','🥈 Silver','🥇 Gold'][e.jesters] : `⚔️ ${e.slain}/12`;
 }
-function renderBoard(entries, me){
-  const el=$('lbBoard');
+function renderBoardInto(el, entries, me){
   if(!entries || entries.length===0){ el.innerHTML='<p style="text-align:center;opacity:.7">No scores yet today — be the first!</p>'; return; }
   el.innerHTML=entries.map((e,i)=>
     `<div class="lb-row${me && e.name.toLowerCase()===me.toLowerCase()?' me':''}">
@@ -980,8 +994,23 @@ async function lbFetch(){
   try{
     const r=await fetch(`${LEADERBOARD_URL}/board?day=${S.dailyNum}`);
     const d=await r.json();
-    renderBoard(d.entries, lbStoredName());
+    renderBoardInto($('lbBoard'), d.entries, lbStoredName());
   }catch(e){ $('lbBoard').innerHTML='<p style="text-align:center;opacity:.7">Couldn\'t reach the leaderboard.</p>'; }
+}
+let lbViewDay=null;
+async function lbShowDay(day){
+  lbViewDay=day;
+  const today=dailyInfo().num;
+  $('lbDayLabel').textContent='Castle #'+day+(day===today?' (today)':'');
+  $('lbPrevBtn').disabled = day<=1;
+  $('lbNextBtn').disabled = day>=today;
+  const el=$('lbModalBoard');
+  el.innerHTML='<p style="text-align:center;opacity:.7">Loading…</p>';
+  try{
+    const r=await fetch(`${LEADERBOARD_URL}/board?day=${day}`);
+    const d=await r.json();
+    renderBoardInto(el, d.entries, lbStoredName());
+  }catch(e){ el.innerHTML='<p style="text-align:center;opacity:.7">Couldn\'t reach the leaderboard.</p>'; }
 }
 async function lbSubmit(){
   const name=$('lbName').value.replace(/[^\w \-'.]/g,'').trim().slice(0,20);
@@ -998,7 +1027,7 @@ async function lbSubmit(){
     if(d.ok){
       lbMarkSubmitted();
       btn.textContent = d.rank ? `Submitted — rank #${d.rank}` : 'Submitted ✓';
-      renderBoard(d.entries, name);
+      renderBoardInto($('lbBoard'), d.entries, name);
     } else { btn.disabled=false; btn.textContent='Try again'; }
   }catch(e){ btn.disabled=false; btn.textContent='Try again'; }
 }
@@ -1414,6 +1443,12 @@ $('introDailyBtn').addEventListener('click',()=>{
 });
 $('shareBtn').addEventListener('click',()=>copyText(shareText(), $('shareBtn'), 'Copied!'));
 $('lbSubmitBtn').addEventListener('click',lbSubmit);
+if(LEADERBOARD_URL){
+  $('lbHeaderBtn').classList.remove('hidden');
+  $('lbHeaderBtn').addEventListener('click',()=>{ $('lbModal').classList.remove('hidden'); lbShowDay(dailyInfo().num); });
+  $('lbPrevBtn').addEventListener('click',()=>lbShowDay(lbViewDay-1));
+  $('lbNextBtn').addEventListener('click',()=>lbShowDay(lbViewDay+1));
+}
 $('challengeBtn').addEventListener('click',()=>{
   let url;
   try{ url=location.origin+location.pathname+'?seed='+S.seed; }
@@ -1433,7 +1468,7 @@ $('sfxBtn').addEventListener('click',()=>{
   $('sfxBtn').classList.toggle('muted',!A.sfxOn);
 });
 document.addEventListener('pointerdown',()=>A.unlock(),{once:true});
-document.querySelectorAll('.modal-back').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m && m.id==='rulesModal') m.classList.add('hidden'); }));
+document.querySelectorAll('.modal-back').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m && (m.id==='rulesModal'||m.id==='lbModal')) m.classList.add('hidden'); }));
 
 (function initialDeal(){
   let seedParam=null;
