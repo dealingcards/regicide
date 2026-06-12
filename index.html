@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regicide — Slay the Corrupted Court</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root{
+  --felt:#43121d;
+  --felt-deep:#270811;
+  --parchment:#f1e6cc;
+  --parchment-shade:#ddc99f;
+  --ink:#2b2018;
+  --gilt:#c99b3f;
+  --gilt-bright:#e8c46a;
+  --crimson:#9b2335;
+  --moss:#3f5d3a;
+  --display:'Pirata One', 'Georgia', serif;
+  --body:'Crimson Pro', 'Georgia', serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--body);
+  color:var(--parchment);
+  background:
+    radial-gradient(ellipse 120% 90% at 50% -10%, rgba(232,196,106,.10), transparent 55%),
+    radial-gradient(ellipse 140% 110% at 50% 115%, var(--felt-deep) 20%, transparent 70%),
+    repeating-linear-gradient(45deg, rgba(0,0,0,.05) 0 2px, transparent 2px 5px),
+    var(--felt);
+  min-height:100%;
+  padding:14px 16px 28px;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+/* ---------- header ---------- */
+header{
+  width:100%; max-width:1060px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  border-bottom:1px solid rgba(201,155,63,.45);
+  padding-bottom:10px; margin-bottom:14px;
+}
+h1{
+  font-family:var(--display); font-weight:400; font-size:2.4rem; letter-spacing:.04em;
+  color:var(--gilt-bright); text-shadow:0 2px 0 rgba(0,0,0,.5);
+}
+h1 .sub{display:block;font-family:var(--body); font-size:.78rem; letter-spacing:.32em; text-transform:uppercase; color:var(--parchment-shade); opacity:.8;}
+.castle-track{display:flex; gap:5px; align-items:center;}
+.castle-track .pip{
+  width:17px; height:25px; border-radius:3px;
+  border:1px solid rgba(201,155,63,.6);
+  background:rgba(0,0,0,.35);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-size:.6rem; line-height:1.05; color:var(--gilt); text-align:center;
+}
+.castle-track .pip.slain{background:var(--gilt); color:var(--felt-deep); border-color:var(--gilt-bright); font-weight:700;}
+.castle-track .pip.slain .ps{font-size:.66rem;}
+.castle-track .pip.slain.red .ps{color:var(--crimson);}
+.castle-track .pip.current{outline:2px solid var(--gilt-bright); outline-offset:1px;}
+.counters{display:flex; gap:14px;}
+.counter{ text-align:center; min-width:64px;}
+.counter .num{font-family:var(--display); font-size:1.5rem; color:var(--gilt-bright); line-height:1;}
+.counter .lbl{font-size:.64rem; letter-spacing:.22em; text-transform:uppercase; color:var(--parchment-shade);}
+.header-btns{display:flex; gap:8px;}
+
+/* ---------- buttons ---------- */
+button{
+  font-family:var(--body); font-size:.95rem; font-weight:600;
+  color:var(--ink); background:linear-gradient(var(--parchment), var(--parchment-shade));
+  border:1px solid #8a6d2c; border-radius:6px;
+  padding:9px 18px; cursor:pointer;
+  box-shadow:0 2px 0 rgba(0,0,0,.45);
+  transition:transform .08s ease, box-shadow .08s ease, opacity .15s;
+}
+button:hover:not(:disabled){transform:translateY(-1px); box-shadow:0 3px 0 rgba(0,0,0,.45);}
+button:active:not(:disabled){transform:translateY(1px); box-shadow:0 1px 0 rgba(0,0,0,.45);}
+button:disabled{opacity:.42; cursor:not-allowed;}
+button:focus-visible{outline:3px solid var(--gilt-bright); outline-offset:2px;}
+button.primary{background:linear-gradient(#e8c46a,#b88a2e); border-color:#6e521b;}
+button.ghost{background:transparent; color:var(--parchment); border-color:rgba(201,155,63,.6); box-shadow:none; font-weight:400;}
+button.danger{background:linear-gradient(#c0566a,#8c2236); color:#fff; border-color:#5b121f;}
+
+/* ---------- battlefield ---------- */
+main{width:100%; max-width:1060px; display:flex; flex-direction:column; gap:14px;}
+.battlefield{
+  display:grid; grid-template-columns: 230px 1fr 300px; gap:18px; align-items:stretch;
+}
+@media (max-width:900px){ .battlefield{grid-template-columns:1fr 1fr;} .scroll-panel{grid-column:1 / -1;} }
+@media (max-width:560px){ .battlefield{grid-template-columns:1fr;} }
+
+/* enemy card */
+.enemy-zone{display:flex; flex-direction:column; align-items:center; gap:10px;}
+.enemy-card{
+  width:200px; height:288px; border-radius:12px; position:relative;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(201,155,63,.18), transparent 60%),
+    linear-gradient(#f5ecd6, #e6d4a8);
+  border:2px solid #8a6d2c;
+  box-shadow: 0 0 0 5px rgba(0,0,0,.35), 0 14px 28px rgba(0,0,0,.55), inset 0 0 0 6px rgba(201,155,63,.35);
+  color:var(--ink);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition:transform .25s ease;
+}
+.enemy-card{transition:opacity .6s ease, transform .6s ease;}
+.enemy-card.fade-out{opacity:0; transform:scale(.9) translateY(14px);}
+.enemy-card.fade-in{animation:cardIn .6s ease;}
+@keyframes cardIn{from{opacity:0; transform:scale(.9) translateY(-14px);}to{opacity:1; transform:none;}}
+.enemy-card.struck{animation:strike .45s ease;}
+@keyframes strike{0%{transform:none;}30%{transform:translateX(-7px) rotate(-2deg); filter:brightness(1.35);}60%{transform:translateX(6px) rotate(1.5deg);}100%{transform:none;}}
+.enemy-card .corner{position:absolute; font-weight:700; font-size:1.15rem; line-height:1.05; text-align:center;}
+.enemy-card .corner.tl{top:9px; left:11px;}
+.enemy-card .corner.br{bottom:9px; right:11px; transform:rotate(180deg);}
+.enemy-card .royal-name{font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; margin-top:2px;}
+.enemy-card.red{color:var(--crimson);}
+.enemy-card .immune-ribbon{
+  position:absolute; top:9px; right:-7px;
+  background:rgba(43,32,24,.92); color:var(--gilt-bright);
+  font-size:.56rem; letter-spacing:.14em; text-transform:uppercase;
+  padding:3px 8px; border:1px solid var(--gilt); border-radius:3px;
+  transform:rotate(5deg); box-shadow:0 2px 5px rgba(0,0,0,.45);
+}
+.enemy-card .immune-ribbon .rs{font-size:.82rem; letter-spacing:0; vertical-align:-1px;}
+.immune-note{
+  max-width:215px; text-align:center; font-size:.8rem; line-height:1.35;
+  color:var(--parchment-shade); font-style:italic;
+  background:rgba(0,0,0,.3); border:1px solid rgba(201,155,63,.4); border-radius:8px;
+  padding:5px 10px;
+}
+.immune-note b{color:var(--gilt-bright); font-style:normal;}
+/* royal portraits & moods */
+.royal-art{width:128px; height:140px; margin-top:6px;}
+.royal-art svg{width:100%; height:100%; overflow:visible;}
+.royal-art.idle svg{animation:idleSway 4.5s ease-in-out infinite;}
+@keyframes idleSway{0%,100%{transform:translateY(0) rotate(-1.2deg);}50%{transform:translateY(3px) rotate(1.2deg);}}
+.royal-art.idle .glint{animation:glint 3.4s ease-in-out infinite;}
+@keyframes glint{0%,86%,100%{opacity:0;}90%,95%{opacity:1;}}
+.royal-art.attack svg{animation:attackLunge 1.15s ease-in-out infinite;}
+@keyframes attackLunge{0%,100%{transform:translateY(0) scale(1);}12%{transform:translateY(6px) scale(.96);}32%{transform:translateY(-6px) scale(1.07) rotate(-2deg);}46%{transform:translateY(-2px) scale(1.05) rotate(2deg);}62%{transform:translateY(0) scale(1);}}
+.royal-art.pain svg{animation:painJitter .55s ease;}
+@keyframes painJitter{0%,100%{transform:none;}20%{transform:translateX(-5px) rotate(-3deg);}40%{transform:translateX(5px) rotate(3deg);}60%{transform:translateX(-3px);}80%{transform:translateX(2px);}}
+.royal-art.defeated svg{animation:defeatSlump .9s ease forwards;}
+@keyframes defeatSlump{to{transform:translateY(9px) rotate(8deg); filter:saturate(.35) brightness(.8);}}
+.royal-art .crown{transition:transform .5s ease; transform-origin:50px 40px;}
+.royal-art.defeated .crown{transform:rotate(-16deg) translateY(-3px);}
+.enemy-stats{display:flex; gap:12px;}
+.stat{
+  background:rgba(0,0,0,.4); border:1px solid rgba(201,155,63,.5); border-radius:8px;
+  padding:6px 13px; text-align:center; min-width:74px;
+}
+.stat .v{font-family:var(--display); font-size:1.45rem; color:var(--gilt-bright); line-height:1;}
+.stat .v .dim{font-size:.95rem; color:var(--parchment-shade);}
+.stat .l{font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--parchment-shade);}
+.healthbar{width:200px; height:9px; border-radius:5px; background:rgba(0,0,0,.5); border:1px solid rgba(201,155,63,.5); overflow:hidden;}
+.healthbar .fill{height:100%; background:linear-gradient(90deg,#8c2236,#c0566a); width:100%; transition:width .4s ease;}
+
+/* center column: played cards + log */
+.table-center{display:flex; flex-direction:column; gap:10px; min-width:0;}
+.zone-label{font-size:.66rem; letter-spacing:.26em; text-transform:uppercase; color:var(--parchment-shade); opacity:.85;}
+.played-area{
+  min-height:120px; border:1px dashed rgba(201,155,63,.45); border-radius:10px;
+  padding:10px; display:flex; flex-wrap:wrap; gap:6px; align-content:flex-start;
+  background:rgba(0,0,0,.18);
+}
+.played-area .placeholder{font-style:italic; color:var(--parchment-shade); opacity:.7; font-size:.92rem;}
+.log{
+  background:rgba(0,0,0,.28); border:1px solid rgba(201,155,63,.3); border-radius:10px;
+  padding:10px 13px; font-size:.92rem; line-height:1.45; max-height:150px; overflow-y:auto;
+}
+.log p{margin:2px 0;}
+.log p strong{color:var(--gilt-bright);}
+.log p.bad{color:#e8a3ae;}
+.log p.good{color:#bcd9a7;}
+
+/* table piles */
+.piles{display:flex; gap:26px; align-items:flex-end; padding:4px 2px 8px;}
+.pile{display:flex; flex-direction:column; align-items:center; gap:5px;}
+.pile-lbl{font-size:.6rem; letter-spacing:.22em; text-transform:uppercase; color:var(--parchment-shade);}
+.pile-cards{position:relative; width:56px; height:80px;}
+.pile-cards.wide{width:auto; display:flex; gap:8px; position:static;}
+.cardback{
+  position:absolute; inset:0; border-radius:7px; border:1.5px solid #8a6d2c;
+  background:
+    repeating-linear-gradient(45deg, rgba(201,155,63,.22) 0 3px, transparent 3px 9px),
+    repeating-linear-gradient(-45deg, rgba(201,155,63,.22) 0 3px, transparent 3px 9px),
+    linear-gradient(#5b1a26,#38101a);
+  box-shadow:inset 0 0 0 3px rgba(201,155,63,.28), 0 2px 5px rgba(0,0,0,.5);
+}
+.cardback.s1{transform:translate(2.5px,-2.5px);}
+.cardback.s2{transform:translate(5px,-5px);}
+.empty-slot{position:absolute; inset:0; border:1.5px dashed rgba(201,155,63,.4); border-radius:7px;}
+.pile-badge{
+  position:absolute; bottom:-7px; right:-10px; z-index:3;
+  background:var(--gilt); color:var(--felt-deep); font-weight:700; font-size:.72rem;
+  border-radius:10px; padding:1px 7px; border:1px solid #6e521b;
+}
+.pile-badge.bump{animation:badgeBump .45s ease;}
+@keyframes badgeBump{30%{transform:scale(1.45);}}
+.discard-top{transform:rotate(-4deg);}
+.jester-card{
+  width:56px; height:80px; border-radius:7px; border:1.5px solid #8a6d2c;
+  background:linear-gradient(#faf3e1,#e9d9b2);
+  box-shadow:0 2px 5px rgba(0,0,0,.5), inset 0 0 0 3px rgba(201,155,63,.25);
+  transition:filter .4s ease, transform .4s ease;
+}
+.jester-card svg{width:100%; height:100%;}
+.jester-card.spent{filter:grayscale(.95) brightness(.65); transform:rotate(9deg) translateY(4px);}
+
+/* jester scroll */
+.scroll-panel{
+  background:linear-gradient(#f5ecd6,#e6d4a8);
+  color:var(--ink); border-radius:10px; border:2px solid #8a6d2c;
+  box-shadow:inset 0 0 0 5px rgba(201,155,63,.3), 0 8px 18px rgba(0,0,0,.4);
+  padding:14px 16px; display:flex; flex-direction:column; gap:8px;
+}
+.scroll-panel h2{
+  font-family:var(--display); font-weight:400; font-size:1.25rem; letter-spacing:.05em;
+  border-bottom:1px solid rgba(43,32,24,.3); padding-bottom:5px;
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+}
+.scroll-panel h2 .toggle{font-family:var(--body); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; user-select:none; display:flex; gap:5px; align-items:center;}
+#tipText{font-size:.96rem; line-height:1.5;}
+#tipText em{color:#6e3b14;}
+.preview{
+  border-top:1px dashed rgba(43,32,24,.35); padding-top:8px; font-size:.93rem; line-height:1.5;
+}
+.preview .pv{display:flex; gap:7px; align-items:baseline; margin:1px 0;}
+.preview .pv .ic{width:1.1em; text-align:center;}
+.preview .nope{opacity:.55; text-decoration:line-through;}
+.preview .warn{color:#8c2236; font-weight:600;}
+
+/* ---------- action bar ---------- */
+.actionbar{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;
+  background:rgba(0,0,0,.28); border:1px solid rgba(201,155,63,.35); border-radius:10px; padding:10px 14px;
+}
+.phase-banner{font-family:var(--display); font-size:1.2rem; color:var(--gilt-bright); letter-spacing:.05em; min-width:170px; text-align:center;}
+.defend-meter{font-size:.95rem;}
+.defend-meter b{color:var(--gilt-bright); font-size:1.1rem;}
+
+/* ---------- hand ---------- */
+.hand-zone{display:flex; flex-direction:column; gap:7px; align-items:center;}
+.hand{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:9px; padding:6px 2px 2px; min-height:128px;
+}
+.card{
+  width:82px; height:118px; border-radius:9px; position:relative; flex:0 0 auto;
+  background:linear-gradient(#faf3e1,#e9d9b2);
+  border:1.5px solid #8a6d2c;
+  box-shadow:0 3px 7px rgba(0,0,0,.45), inset 0 0 0 3px rgba(201,155,63,.25);
+  color:var(--ink); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .14s ease, box-shadow .14s ease;
+  font-family:var(--body);
+  user-select:none;
+}
+.card:focus-visible{outline:3px solid var(--gilt-bright); outline-offset:2px;}
+.card.red{color:var(--crimson);}
+.card .c{position:absolute; top:5px; left:7px; font-weight:700; font-size:.95rem; line-height:1.02; text-align:center;}
+.card .c2{position:absolute; bottom:5px; right:7px; font-weight:700; font-size:.95rem; line-height:1.02; transform:rotate(180deg); text-align:center;}
+.card .mid{font-size:2.1rem;}
+.card .mid.royal{font-family:var(--display); font-size:2.6rem;}
+.card:hover{transform:translateY(-7px);}
+.card.sel{transform:translateY(-15px); box-shadow:0 0 0 3px var(--gilt-bright), 0 9px 14px rgba(0,0,0,.5);}
+.card.small{width:56px; height:80px; cursor:default;}
+.card.small .mid{font-size:1.4rem;}
+.card.small .mid.royal{font-size:1.7rem;}
+.card.small .c,.card.small .c2{font-size:.68rem;}
+.card.small:hover{transform:none;}
+.card.dimmed{opacity:.45;}
+.hand-info{font-size:.84rem; color:var(--parchment-shade); letter-spacing:.06em;}
+
+/* stat pulses & floating numbers */
+.stat .v{display:inline-block; transform-origin:center;}
+@keyframes statHit{0%{transform:scale(1);}25%{transform:scale(1.5); color:#ff7d92; text-shadow:0 0 14px rgba(255,80,110,.85);}100%{transform:scale(1);}}
+@keyframes statGood{0%{transform:scale(1);}25%{transform:scale(1.4); color:#fff0c0; text-shadow:0 0 14px rgba(232,196,106,.95);}100%{transform:scale(1);}}
+.stat .v.hit{animation:statHit .55s ease;}
+.stat .v.good{animation:statGood .55s ease;}
+.enemy-zone{position:relative;}
+.float-num{
+  position:absolute; left:50%; top:26%; transform:translateX(-50%);
+  font-family:var(--display); font-size:2.3rem; color:#ff7d92;
+  text-shadow:0 2px 6px rgba(0,0,0,.75); pointer-events:none; z-index:5;
+  animation:floatUp .95s ease forwards;
+}
+.float-num.gold{color:var(--gilt-bright);}
+@keyframes floatUp{
+  0%{opacity:0; transform:translate(-50%,14px) scale(.6);}
+  18%{opacity:1; transform:translate(-50%,0) scale(1.15);}
+  100%{opacity:0; transform:translate(-50%,-72px) scale(1);}
+}
+button.muted{opacity:.5;}
+
+/* ---------- modal ---------- */
+.modal-back{
+  position:fixed; inset:0; background:rgba(15,4,9,.78); display:flex; align-items:center; justify-content:center;
+  padding:18px; z-index:50;
+}
+.modal{
+  background:linear-gradient(#f5ecd6,#e6d4a8); color:var(--ink);
+  border:2px solid #8a6d2c; border-radius:12px; box-shadow:inset 0 0 0 6px rgba(201,155,63,.3), 0 20px 50px rgba(0,0,0,.6);
+  max-width:640px; width:100%; max-height:86vh; overflow-y:auto; padding:24px 26px;
+}
+.modal h2{font-family:var(--display); font-weight:400; font-size:2rem; color:#6e3b14; margin-bottom:8px;}
+.modal h3{font-family:var(--display); font-weight:400; font-size:1.25rem; margin:14px 0 4px;}
+.modal p, .modal li{font-size:1rem; line-height:1.55; margin:5px 0;}
+.modal ul{padding-left:20px;}
+.modal .center{text-align:center;}
+.modal .row{display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap;}
+.suit-key{display:grid; grid-template-columns:auto 1fr; gap:4px 12px; margin:8px 0;}
+.suit-key .s{font-size:1.3rem; text-align:center;}
+.suit-key .s.red{color:var(--crimson);}
+.hidden{display:none !important;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important; transition:none !important;}
+}
+@media (max-width:560px){
+  h1{font-size:1.7rem;}
+  .card{width:64px; height:92px;}
+  .card .mid{font-size:1.6rem;}
+  .enemy-card{width:170px; height:245px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Regicide <span class="sub">slay the corrupted court</span></h1>
+  <div class="castle-track" id="castleTrack" aria-label="Castle progress"></div>
+  <div class="counters">
+    <div class="counter"><div class="num" id="deckCount">0</div><div class="lbl">Tavern</div></div>
+    <div class="counter"><div class="num" id="discardCount">0</div><div class="lbl">Discard</div></div>
+    <div class="counter"><div class="num" id="jesterCount">2</div><div class="lbl">Jesters</div></div>
+  </div>
+  <div class="header-btns">
+    <button class="ghost" id="musicBtn" aria-pressed="true" title="Toggle music">&#9834; Music</button>
+    <button class="ghost" id="sfxBtn" aria-pressed="true" title="Toggle sound effects">&#128266; SFX</button>
+    <button class="ghost" id="rulesBtn">Rules</button>
+    <button class="ghost" id="restartBtn">New game</button>
+  </div>
+</header>
+
+<main>
+  <div class="battlefield">
+    <div class="enemy-zone">
+      <div class="enemy-card" id="enemyCard"></div>
+      <div class="healthbar"><div class="fill" id="healthFill"></div></div>
+      <div class="enemy-stats">
+        <div class="stat"><div class="v" id="enemyHealth">—</div><div class="l">Health</div></div>
+        <div class="stat"><div class="v" id="enemyAttack">—</div><div class="l">Attack</div></div>
+      </div>
+      <div class="immune-note" id="immuneNote"></div>
+    </div>
+
+    <div class="table-center">
+      <div class="zone-label">Cards in play against this royal</div>
+      <div class="played-area" id="playedArea"><span class="placeholder">No cards played yet.</span></div>
+      <div class="zone-label">Chronicle</div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <div class="zone-label">The table</div>
+      <div class="piles">
+        <div class="pile"><div class="pile-cards" id="tavernPile"></div><div class="pile-lbl">Tavern deck</div></div>
+        <div class="pile"><div class="pile-cards" id="discardPile"></div><div class="pile-lbl">Discard</div></div>
+        <div class="pile"><div class="pile-cards wide" id="jesterPile"></div><div class="pile-lbl">Jesters</div></div>
+      </div>
+    </div>
+
+    <div class="scroll-panel">
+      <h2>The Jester's Counsel
+        <label class="toggle"><input type="checkbox" id="tipsToggle" checked> Tips</label>
+      </h2>
+      <div id="tipText"></div>
+      <div class="preview" id="previewBox"></div>
+    </div>
+  </div>
+
+  <div class="actionbar" id="actionBar">
+    <div class="phase-banner" id="phaseBanner">Attack phase</div>
+    <span class="defend-meter hidden" id="defendMeter"></span>
+    <button class="primary" id="playBtn">Play cards</button>
+    <button class="danger hidden" id="discardBtn">Discard selected</button>
+    <button id="jesterBtn" title="Discard your hand and draw 8 fresh cards">Flip a Jester</button>
+  </div>
+
+  <div class="hand-zone">
+    <div class="zone-label">Your hand</div>
+    <div class="hand" id="hand"></div>
+    <div class="hand-info" id="handInfo"></div>
+  </div>
+</main>
+
+<!-- intro / rules / endgame modals -->
+<div class="modal-back" id="introModal">
+  <div class="modal">
+    <h2 class="center">Regicide</h2>
+    <p class="center"><em>A solo battle against twelve corrupted royals.</em></p>
+    <p>The court has fallen to darkness. Armed with a humble tavern deck of numbered cards, you must slay all <strong>4 Jacks</strong>, then <strong>4 Queens</strong>, then <strong>4 Kings</strong>. Each card you play deals damage equal to its value — and its suit grants a power.</p>
+    <div class="suit-key">
+      <div class="s red">♥</div><div><strong>Hearts</strong> — heal: shuffle that many cards from the discard back under the tavern deck.</div>
+      <div class="s red">♦</div><div><strong>Diamonds</strong> — draw that many cards (up to a hand of 8).</div>
+      <div class="s">♣</div><div><strong>Clubs</strong> — double damage.</div>
+      <div class="s">♠</div><div><strong>Spades</strong> — shield: reduce the royal's attack by that value, for as long as it lives.</div>
+    </div>
+    <p>But beware: every royal is <strong>immune to its own suit's power</strong>, and after you strike, it strikes back — you must discard cards worth at least its attack, or fall.</p>
+    <p>You carry <strong>two Jesters</strong>: flip one to discard your whole hand and draw 8 fresh cards. And the Jester on your right will whisper tips as you learn. Good hunting.</p>
+    <div class="row"><button class="primary" id="startBtn">Storm the castle</button></div>
+  </div>
+</div>
+
+<div class="modal-back hidden" id="rulesModal">
+  <div class="modal">
+    <h2>How to play</h2>
+    <h3>Your turn, in order</h3>
+    <ul>
+      <li><strong>1. Play cards</strong> (you may first flip a Jester to refresh your hand).</li>
+      <li><strong>2. Suit powers resolve</strong> — hearts heal, diamonds draw, clubs double, spades shield.</li>
+      <li><strong>3. Damage</strong> equal to the cards' total value hits the royal.</li>
+      <li><strong>4. The royal strikes back</strong> — discard cards from your hand totalling at least its attack (minus spade shields). If you can't, you lose.</li>
+    </ul>
+    <h3>What you may play</h3>
+    <ul>
+      <li>A <strong>single card</strong> of any value.</li>
+      <li>An <strong>Ace + one other card</strong> ("animal companion") — values add, both suits trigger.</li>
+      <li>A <strong>set of 2s, 3s, 4s, or 5s</strong> of the same rank, if the total is 10 or less (e.g. three 3s = 9). All suits trigger.</li>
+    </ul>
+    <h3>The royals</h3>
+    <ul>
+      <li><strong>Jack</strong>: 20 health, 10 attack. <strong>Queen</strong>: 30 / 15. <strong>King</strong>: 40 / 20.</li>
+      <li>Each royal is <strong>immune to its own suit</strong> — that suit's power never triggers against it. (Spades royals are the nastiest: nothing softens their attack.)</li>
+      <li>Defeat a royal with <strong>exact damage</strong> and it lands face-up on top of the tavern deck — you'll draw it and can wield it as a mighty weapon (J = 10, Q = 15, K = 20).</li>
+      <li>Otherwise it goes to the discard pile. Either way, you skip its counterattack and face the next royal.</li>
+    </ul>
+    <h3>Jesters</h3>
+    <ul>
+      <li>You have <strong>2 Jesters</strong>. Flip one — at the start of your turn, or just before taking a royal's counterattack — to <strong>discard your whole hand and draw 8 fresh cards</strong>. This doesn't count as "drawing", so it works even against Diamonds royals.</li>
+      <li>Finish with both Jesters untouched for a <strong>Gold</strong> victory; one flipped is <strong>Silver</strong>, both is <strong>Bronze</strong>.</li>
+      <li>(In multiplayer Regicide, Jesters instead cancel a royal's immunity — solo plays by its own rules.)</li>
+      <li>There is no yielding in solo: if you cannot play a card, you lose.</li>
+    </ul>
+    <div class="row"><button class="primary" data-close>Back to battle</button></div>
+  </div>
+</div>
+
+<div class="modal-back hidden" id="endModal">
+  <div class="modal center">
+    <h2 id="endTitle"></h2>
+    <p id="endText"></p>
+    <div class="row"><button class="primary" id="endRestartBtn">Play again</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const SUITS = ['♥','♦','♣','♠'];
+const RED = s => s==='♥' || s==='♦';
+const SUITNAME = {'♥':'Hearts','♦':'Diamonds','♣':'Clubs','♠':'Spades'};
+const ROYAL = { J:{hp:20, atk:10, name:'Jack'}, Q:{hp:30, atk:15, name:'Queen'}, K:{hp:40, atk:20, name:'King'} };
+const IMMUNE_TEXT = {
+  '♥':"your Hearts won't heal the tavern deck",
+  '♦':"your Diamonds won't draw you cards",
+  '♣':"your Clubs won't double damage",
+  '♠':"your Spades won't shield you"
+};
+const HAND_MAX = 8;
+
+/* ---------- audio engine (all synthesized, no files) ---------- */
+const A = (() => {
+  let ctx=null, master, musicBus, sfxBus, musicTimer=null, started=false;
+  let musicOn=true, sfxOn=true, beat=0, melIdx=4;
+  const SCALE=[146.83,164.81,174.61,196,220,246.94,261.63,293.66,329.63,349.23]; // D dorian
+  function ensure(){
+    if(ctx) return true;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return false;
+    ctx=new AC();
+    master=ctx.createGain(); master.gain.value=.85; master.connect(ctx.destination);
+    sfxBus=ctx.createGain(); sfxBus.gain.value=.7; sfxBus.connect(master);
+    musicBus=ctx.createGain(); musicBus.gain.value=.3; musicBus.connect(master);
+    return true;
+  }
+  function osc(freq,{type='sine',t=0,dur=.3,vol=.3,bus=null,glide=0,lp=0}={}){
+    if(!ctx) return;
+    const t0=ctx.currentTime+t;
+    const o=ctx.createOscillator(); o.type=type; o.frequency.setValueAtTime(freq,t0);
+    if(glide) o.frequency.exponentialRampToValueAtTime(Math.max(20,freq+glide),t0+dur);
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(0,t0);
+    g.gain.linearRampToValueAtTime(vol,t0+.012);
+    g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+    let node=o;
+    if(lp){ const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=lp; o.connect(f); node=f; }
+    node.connect(g); g.connect(bus||sfxBus);
+    o.start(t0); o.stop(t0+dur+.06);
+  }
+  function noise({t=0,dur=.15,vol=.25,lp=2000,hp=0}={}){
+    if(!ctx) return;
+    const t0=ctx.currentTime+t;
+    const len=Math.max(1,Math.floor(ctx.sampleRate*dur));
+    const buf=ctx.createBuffer(1,len,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+    const src=ctx.createBufferSource(); src.buffer=buf;
+    const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=lp;
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(vol,t0);
+    g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+    src.connect(f);
+    if(hp){ const f2=ctx.createBiquadFilter(); f2.type='highpass'; f2.frequency.value=hp; f.connect(f2); f2.connect(g); }
+    else f.connect(g);
+    g.connect(sfxBus);
+    src.start(t0); src.stop(t0+dur+.02);
+  }
+  const FX=fn=>(...a)=>{ if(!ctx||!sfxOn) return; fn(...a); };
+  const sfx={
+    select:   FX(()=>osc(740,{type:'triangle',dur:.09,vol:.16})),
+    deselect: FX(()=>osc(520,{type:'triangle',dur:.09,vol:.12})),
+    invalid:  FX(()=>{ osc(220,{type:'square',dur:.13,vol:.09}); osc(207,{type:'square',dur:.17,vol:.07,t:.03}); }),
+    play:     FX(()=>{ noise({dur:.12,vol:.12,lp:5200,hp:800}); osc(330,{type:'triangle',dur:.12,vol:.13,t:.02}); }),
+    hit:      FX(big=>{ noise({dur:.18,vol:big?.3:.2,lp:1400}); osc(95,{dur:.32,vol:big?.5:.35,glide:-55}); if(big) osc(60,{dur:.5,vol:.4,t:.04,glide:-25}); }),
+    heal:     FX(()=>{ [523,659,784].forEach((f,i)=>osc(f,{dur:.42,vol:.11,t:i*.09})); }),
+    draw:     FX(n=>{ for(let i=0;i<Math.min(n,4);i++) noise({t:i*.07,dur:.05,vol:.08,lp:6000,hp:1500}); }),
+    shield:   FX(()=>{ osc(880,{type:'triangle',dur:.5,vol:.09}); osc(885,{type:'triangle',dur:.5,vol:.09}); osc(1320,{dur:.32,vol:.05,t:.05}); }),
+    jester:   FX(()=>{ [660,830,660,990,1244].forEach((f,i)=>osc(f,{type:'square',dur:.09,vol:.06,t:i*.075})); }),
+    slay:     FX(()=>{ [293.66,349.23,440,587.33].forEach((f,i)=>{ osc(f,{type:'triangle',dur:.5,vol:.16,t:i*.11}); osc(f*2,{dur:.4,vol:.045,t:i*.11}); }); }),
+    exact:    FX(()=>{ [1174.7,1568,2093].forEach((f,i)=>osc(f,{dur:.55,vol:.07,t:.5+i*.1})); }),
+    enemyAttack: FX(()=>{ osc(82,{type:'sawtooth',dur:.55,vol:.2,glide:-30,lp:320}); noise({dur:.4,vol:.09,lp:500}); }),
+    sacrifice:FX(()=>{ noise({dur:.18,vol:.13,lp:3000,hp:400}); osc(150,{dur:.3,vol:.18,t:.05,glide:-60}); }),
+    victory:  FX(()=>{ [293.66,369.99,440,587.33,440,587.33,739.99].forEach((f,i)=>osc(f,{type:'triangle',dur:.48,vol:.15,t:i*.16})); }),
+    defeat:   FX(()=>{ [220,196,174.61,146.83].forEach((f,i)=>{ osc(f,{type:'sawtooth',dur:.85,vol:.1,t:i*.42,lp:900}); osc(f/2,{dur:.85,vol:.09,t:i*.42}); }); }),
+  };
+  function startDrone(){
+    const mk=(f,type,vol,lpf)=>{
+      const o=ctx.createOscillator(); o.type=type; o.frequency.value=f;
+      const fl=ctx.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=lpf;
+      const g=ctx.createGain(); g.gain.value=0;
+      g.gain.linearRampToValueAtTime(vol, ctx.currentTime+2.5);
+      o.connect(fl); fl.connect(g); g.connect(musicBus); o.start();
+    };
+    mk(73.42,'sawtooth',.05,220);  // D2 drone
+    mk(110,'sine',.045,400);       // A2 fifth
+    mk(146.83,'sine',.02,600);     // D3 octave
+  }
+  function pluck(f,t,vol,dur){
+    osc(f,{type:'triangle',t,dur,vol,bus:musicBus,lp:1800});
+    osc(f*2,{t,dur:dur*.6,vol:vol*.22,bus:musicBus});
+  }
+  function tickMusic(){
+    beat++;
+    if(beat%2===0) osc(58,{dur:.18,vol:.05,bus:musicBus,glide:-10}); // soft tambour
+    if(Math.random()<.6){
+      melIdx+=[-2,-1,-1,0,1,1,2][Math.floor(Math.random()*7)];
+      melIdx=Math.max(0,Math.min(SCALE.length-1,melIdx));
+      pluck(SCALE[melIdx],0,.10,.62);
+      if(Math.random()<.18) pluck(SCALE[Math.max(0,melIdx-2)],.27,.06,.4);
+    }
+    if(beat%16===0 && Math.random()<.5) melIdx=4; // drift home
+  }
+  function startMusic(){
+    if(!ensure()||started) return;
+    started=true; startDrone();
+    musicTimer=setInterval(()=>{ if(musicOn && ctx.state==='running') tickMusic(); },550);
+  }
+  function unlock(){
+    if(!ensure()) return;
+    if(ctx.state==='suspended') ctx.resume();
+    if(musicOn) startMusic();
+  }
+  function setMusic(on){
+    musicOn=on;
+    if(!ensure()) return;
+    if(on && !started) startMusic();
+    musicBus.gain.linearRampToValueAtTime(on?.3:0, ctx.currentTime+.35);
+  }
+  return { unlock, sfx, setMusic, setSfx:on=>{sfxOn=on;}, get musicOn(){return musicOn;}, get sfxOn(){return sfxOn;} };
+})();
+
+let S = null;            // game state
+let animPrev = {key:-1, hp:null, atk:null};   // for stat pulse/tween
+let seenTips = {};       // one-time tips
+let tipsOn = true;
+
+const $ = id => document.getElementById(id);
+
+function cardValue(c){
+  if (c.rank==='A') return 1;
+  if (c.rank==='J') return 10;
+  if (c.rank==='Q') return 15;
+  if (c.rank==='K') return 20;
+  return parseInt(c.rank,10);
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function newGame(){
+  const tavern=[], castle=[];
+  for(const s of SUITS){
+    tavern.push({rank:'A',suit:s});
+    for(let r=2;r<=10;r++) tavern.push({rank:String(r),suit:s});
+  }
+  const js=shuffle(SUITS.map(s=>({rank:'J',suit:s})));
+  const qs=shuffle(SUITS.map(s=>({rank:'Q',suit:s})));
+  const ks=shuffle(SUITS.map(s=>({rank:'K',suit:s})));
+  castle.push(...js,...qs,...ks);
+  shuffle(tavern);
+  S = {
+    tavern, discard:[], castle, slain:0,
+    hand:[], jesters:2,
+    enemy:null, phase:'play',
+    selected:new Set(),
+    slainCards:[],
+    over:false, busy:false,
+    gen:Math.random()
+  };
+  moodOverride=null; lastArtKey=''; prevPiles={t:-1,d:-1};
+  for(let i=0;i<HAND_MAX;i++) draw();
+  nextEnemy();
+  log(`You storm the castle. <strong>${enemyTitle()}</strong> bars your way.`);
+}
+
+function draw(){
+  if(S.tavern.length===0 || S.hand.length>=HAND_MAX) return false;
+  S.hand.push(S.tavern.shift());
+  return true;
+}
+function nextEnemy(){
+  const c = S.castle.shift();
+  S.enemy = { id:'e'+S.castle.length, card:c, hp:ROYAL[c.rank].hp, atk:ROYAL[c.rank].atk,
+              spades:0, played:[] };
+}
+function enemyTitle(){ const e=S.enemy; return `the ${ROYAL[e.card.rank].name} of ${SUITNAME[e.card.suit]}`; }
+function shieldNow(){
+  const e=S.enemy;
+  if(e.card.suit==='♠') return 0;
+  return e.spades;
+}
+function effAttack(){ return Math.max(0, S.enemy.atk - shieldNow()); }
+
+/* ---------- selection rules ---------- */
+function selectedCards(){ return [...S.selected].map(i=>S.hand[i]); }
+function validPlay(cards){
+  if(cards.length===0) return {ok:false, why:'Select one or more cards to play.'};
+  if(cards.length===1) return {ok:true};
+  const aces = cards.filter(c=>c.rank==='A').length;
+  if(cards.length===2 && aces>=1) return {ok:true, companion:true};
+  const sameRank = cards.every(c=>c.rank===cards[0].rank);
+  if(sameRank && ['2','3','4','5'].includes(cards[0].rank)){
+    const total = cards.reduce((t,c)=>t+cardValue(c),0);
+    if(total<=10) return {ok:true, combo:true};
+    return {ok:false, why:`A set of ${cards[0].rank}s may total at most 10 — this totals ${total}.`};
+  }
+  if(sameRank) return {ok:false, why:'Only 2s, 3s, 4s and 5s may be played as matched sets.'};
+  if(aces>=1) return {ok:false, why:'An Ace may accompany only <em>one</em> other card.'};
+  return {ok:false, why:'Play a single card, an Ace + one card, or a matched set of 2s–5s totalling ≤ 10.'};
+}
+
+/* ---------- resolve an attack ---------- */
+function computePreview(cards){
+  const v = validPlay(cards);
+  const e = S.enemy;
+  const total = cards.reduce((t,c)=>t+cardValue(c),0);
+  const suits = new Set(cards.map(c=>c.suit));
+  const blocked = s => e.card.suit===s;
+  return {
+    valid:v, total, suits,
+    hearts: suits.has('♥') ? {amt:total, blocked:blocked('♥')} : null,
+    diamonds: suits.has('♦') ? {amt:total, blocked:blocked('♦')} : null,
+    clubs: suits.has('♣') ? {blocked:blocked('♣')} : null,
+    spades: suits.has('♠') ? {amt:total, blocked:blocked('♠')} : null,
+    damage: (suits.has('♣') && !blocked('♣')) ? total*2 : total
+  };
+}
+
+function playSelected(){
+  if(S.busy) return;
+  const cards = selectedCards();
+  const pv = computePreview(cards);
+  if(!pv.valid.ok){ flashTip(pv.valid.why); return; }
+  // remove from hand
+  const idx=[...S.selected].sort((a,b)=>b-a);
+  idx.forEach(i=>S.hand.splice(i,1));
+  S.selected.clear();
+  A.sfx.play();
+  const e=S.enemy;
+  e.played.push(...cards);
+
+  const names = cards.map(c=>c.rank+c.suit).join(' + ');
+  log(`You play <strong>${names}</strong>.`);
+
+  // suit powers — hearts first, then diamonds
+  if(pv.hearts){
+    if(pv.hearts.blocked) log(`♥ Healing fizzles — ${enemyTitle()} is immune to Hearts.`, 'bad');
+    else {
+      shuffle(S.discard);
+      const n=Math.min(pv.hearts.amt, S.discard.length);
+      for(let i=0;i<n;i++) S.tavern.push(S.discard.pop());
+      A.sfx.heal();
+      log(`♥ ${n} card${n!==1?'s':''} returned from the discard to the bottom of the tavern deck.`, 'good');
+      markTip('hearts');
+    }
+  }
+  if(pv.diamonds){
+    if(pv.diamonds.blocked) log(`♦ The draw is denied — immunity to Diamonds.`, 'bad');
+    else {
+      let n=0; for(let i=0;i<pv.diamonds.amt;i++){ if(draw()) n++; }
+      if(n>0) A.sfx.draw(n);
+      log(`♦ You draw ${n} card${n!==1?'s':''}.`, n>0?'good':'');
+      markTip('diamonds');
+    }
+  }
+  if(pv.spades){
+    e.spades += pv.spades.amt;
+    if(pv.spades.blocked) log(`♠ Your shield is useless — a Spades royal's immunity cannot be broken.`, 'bad');
+    else { A.sfx.shield(); log(`♠ Shield raised — the royal's attack drops to ${effAttack()}.`, 'good'); markTip('spades'); }
+  }
+  let dmg = pv.damage;
+  if(pv.clubs){
+    if(pv.clubs.blocked) log(`♣ No doubling — immunity to Clubs.`, 'bad');
+    else { log(`♣ Damage doubled!`, 'good'); markTip('clubs'); }
+  }
+
+  // damage
+  e.hp -= dmg;
+  A.sfx.hit(dmg>=15 || (pv.clubs && !pv.clubs.blocked));
+  floatNum('−'+dmg);
+  if(e.hp>0) moodFlash('pain',700);
+  const ec=$('enemyCard'); ec.classList.remove('struck'); void ec.offsetWidth; ec.classList.add('struck');
+  if(e.hp<=0){
+    const exact = e.hp===0;
+    A.sfx.slay();
+    if(exact){ A.sfx.exact(); floatNum('Captured!', true); }
+    log(`⚔ You deal <strong>${dmg}</strong> damage — <strong>${enemyTitle()} is slain!</strong>`, 'good');
+    S.discard.push(...e.played);
+    if(exact){
+      S.tavern.unshift(e.card);
+      log(`A perfect blow! The fallen royal lies atop the tavern deck — draw it, and wield its power (worth ${cardValue(e.card)}).`, 'good');
+      markTip('exact');
+    } else {
+      S.discard.push(e.card);
+    }
+    S.slain++;
+    S.slainCards.push(e.card);
+    // defeated look, then fade out, then the next royal fades in
+    clearTimeout(moodTimer);
+    moodOverride='defeated';
+    S.busy=true;
+    render();
+    const gen=S.gen;
+    setTimeout(()=>{ if(S.gen!==gen) return; $('enemyCard').classList.add('fade-out'); }, 800);
+    setTimeout(()=>{
+      if(S.gen!==gen) return;
+      S.busy=false;
+      if(S.castle.length===0){ victory(); return; }
+      moodOverride=null;
+      $('enemyCard').classList.remove('fade-out');
+      nextEnemy();
+      log(`<strong>${enemyTitle()}</strong> steps forward.`);
+      S.phase='play';
+      render();
+      const ec2=$('enemyCard');
+      ec2.classList.add('fade-in');
+      setTimeout(()=>ec2.classList.remove('fade-in'), 650);
+      checkStuck();
+    }, 1500);
+    return;
+  }
+  log(`⚔ You deal <strong>${dmg}</strong> damage. ${e.hp} health remains.`);
+  startDefend();
+}
+
+function checkStuck(){
+  if(S.over) return false;
+  if(S.phase==='play' && S.hand.length===0){
+    outOfCards();
+    return true;
+  }
+  return false;
+}
+function outOfCards(){
+  S.over=true; A.sfx.defeat(); render();
+  $('endTitle').textContent='You Have Fallen';
+  $('endText').innerHTML=`Your hand is empty — in solo Regicide there is no yielding, and a hero who cannot play a card has lost. You slew ${S.slain} of 12 royals. The castle holds… this time.`;
+  $('endModal').classList.remove('hidden');
+}
+
+function flipJester(){
+  if(S.busy || S.jesters<=0 || S.tavern.length===0) return;
+  S.jesters--;
+  const tossed=S.hand.length;
+  S.discard.push(...S.hand);
+  S.hand=[];
+  S.selected.clear();
+  let n=0; for(let i=0;i<HAND_MAX;i++){ if(draw()) n++; }
+  A.sfx.jester();
+  log(`🃏 You flip a Jester — ${tossed} card${tossed!==1?'s':''} tossed to the discard, ${n} fresh card${n!==1?'s':''} drawn.`, 'good');
+  markTip('jester');
+  if(S.phase==='defend'){
+    const atk=effAttack();
+    const maxPay=S.hand.reduce((t,c)=>t+cardValue(c),0);
+    if(maxPay<atk){ defeat(atk,maxPay); return; }
+    log(`Now choose cards to sacrifice — at least ${atk}.`);
+  } else if(checkStuck()) return;
+  render();
+}
+
+/* ---------- defense ---------- */
+function startDefend(){
+  const atk = effAttack();
+  if(atk===0){
+    log(`🛡 Your shields absorb the entire counterattack — <strong>your move</strong>.`, 'good');
+    S.phase='play';
+    if(checkStuck()) return;
+    render(); return;
+  }
+  const maxPay = S.hand.reduce((t,c)=>t+cardValue(c),0);
+  if(maxPay < atk){
+    if(S.jesters>0 && S.tavern.length>0){
+      S.phase='defend';
+      S.selected.clear();
+      A.sfx.enemyAttack();
+      log(`${enemyTitle().charAt(0).toUpperCase()+enemyTitle().slice(1)} strikes for <strong>${atk}</strong> — your hand cannot cover it. Only a Jester can save you now!`, 'bad');
+      render(); return;
+    }
+    defeat(atk, maxPay); return;
+  }
+  S.phase='defend';
+  S.selected.clear();
+  A.sfx.enemyAttack();
+  log(`${enemyTitle().charAt(0).toUpperCase()+enemyTitle().slice(1)} strikes for <strong>${atk}</strong>. Choose cards to sacrifice.`, 'bad');
+  render();
+}
+function confirmDiscard(){
+  if(S.busy) return;
+  const atk=effAttack();
+  const cards=selectedCards();
+  const total=cards.reduce((t,c)=>t+cardValue(c),0);
+  if(total<atk){ flashTip(`You must discard at least <em>${atk}</em> worth of cards — you've chosen ${total}.`); return; }
+  const idx=[...S.selected].sort((a,b)=>b-a);
+  idx.forEach(i=>S.hand.splice(i,1));
+  S.selected.clear();
+  S.discard.push(...cards);
+  A.sfx.sacrifice();
+  log(`You sacrifice ${cards.map(c=>c.rank+c.suit).join(', ')} (${total}). The blow is weathered — <strong>your move</strong>.`);
+  S.phase='play';
+  if(checkStuck()) return;
+  render();
+}
+
+/* ---------- end states ---------- */
+function victory(){
+  S.over=true; A.sfx.victory(); render();
+  const medals=['a Bronze victory — hard-won and bloody','a Silver victory','a flawless Gold victory'];
+  $('endTitle').textContent='The Court is Slain!';
+  $('endText').innerHTML=`All twelve corrupted royals have fallen. With ${S.jesters} Jester${S.jesters!==1?'s':''} unflipped, yours is ${medals[S.jesters]}.`;
+  $('endModal').classList.remove('hidden');
+}
+function defeat(atk, maxPay){
+  S.over=true; A.sfx.defeat(); render();
+  $('endTitle').textContent='You Have Fallen';
+  $('endText').innerHTML=`${enemyTitle().charAt(0).toUpperCase()+enemyTitle().slice(1)} strikes for ${atk}, but your hand can muster only ${maxPay}. You slew ${S.slain} of 12 royals. The castle holds… this time.`;
+  $('endModal').classList.remove('hidden');
+}
+
+/* ---------- tips engine ---------- */
+function markTip(k){ seenTips[k]=true; }
+let flashMsg=null, flashTimer=null;
+function flashTip(html){
+  A.sfx.invalid();
+  flashMsg=html; renderTip();
+  clearTimeout(flashTimer);
+  flashTimer=setTimeout(()=>{ flashMsg=null; renderTip(); }, 4200);
+}
+function currentTip(){
+  if(flashMsg) return '⚠ '+flashMsg;
+  if(!tipsOn) return '<em>Tips are off. Toggle them back on any time.</em>';
+  const e=S.enemy, sel=selectedCards();
+  if(S.phase==='defend'){
+    const maxPay=S.hand.reduce((t,c)=>t+cardValue(c),0);
+    if(maxPay<effAttack()) return `Your hand totals only ${maxPay} against a ${effAttack()} attack. <em>Flip a Jester now</em> — trade your hand for 8 fresh cards and pray they're enough.`;
+    if(!seenTips.defend){ markTip('defendShown'); return `The royal strikes back! Tap cards totalling at least <em>${effAttack()}</em> to discard them. Spend cheap or awkward cards — anything you discard is gone (until Hearts bring it back). Royals you've captured count J=10, Q=15, K=20. In a pinch, you may still flip a Jester <em>before</em> paying, to swap your hand for 8 fresh cards.`; }
+    return `Discard cards worth at least <em>${effAttack()}</em>. Try not to overpay — excess value is wasted.`;
+  }
+  if(sel.length>0){
+    const pv=computePreview(sel);
+    if(!pv.valid.ok) return pv.valid.why;
+    const bits=[];
+    if(pv.hearts && pv.hearts.blocked || pv.diamonds && pv.diamonds.blocked || pv.clubs && pv.clubs.blocked || pv.spades && pv.spades.blocked)
+      bits.push(`This royal is <em>immune to ${SUITNAME[e.card.suit]}</em> — that suit's power won't trigger (though the card still deals its damage).`);
+    if(pv.damage===e.hp) bits.push(`<em>Exactly lethal!</em> A precise kill puts the royal on top of the tavern deck to wield later.`);
+    else if(pv.damage>e.hp) bits.push(`This overkills by ${pv.damage-e.hp}. If you can hit <em>exactly ${e.hp}</em>, you'd capture the royal as a weapon instead.`);
+    if(bits.length) return bits.join(' ');
+    return `Press <em>Play cards</em> to strike for ${pv.damage}. The royal will answer with ${effAttack()} unless this kills it.`;
+  }
+  // idle, contextual one-time tips in priority order
+  if(!seenTips.intro){ markTip('intro'); return `Welcome, regicide. Tap cards in your hand to select them, then <em>Play cards</em>. Start by knocking down the Jack's 20 health — and remember it's immune to its own suit (${SUITNAME[e.card.suit]}).`; }
+  if(!seenTips.combos){ markTip('combos'); return `You can play an <em>Ace with one other card</em> (values add, both suits trigger), or a matched set of 2s–5s totalling 10 or less. Multi-suit plays trigger <em>every</em> suit's power.`; }
+  if(!seenTips.suitsExplained){ markTip('suitsExplained'); return `Suit powers, at a glance: ♥ restocks the tavern deck from the discard, ♦ draws cards, ♣ doubles damage, ♠ shields you from the counterattack. Diamonds and Hearts keep you alive; Clubs and Spades win fights.`; }
+  if(e.card.suit==='♠' && !seenTips.spadeEnemyWarn){ markTip('spadeEnemyWarn'); return `Careful — a Spades royal ignores shields, so its full ${e.atk} attack lands every single turn. Kill it fast (Clubs help), and spend spades freely as damage or discard fodder here.`; }
+  if(S.hand.length<=3 && !seenTips.lowHand){ markTip('lowHand'); return `Your hand is thin. Diamonds (♦) refill it — or a Jester flip trades your whole hand for 8 fresh cards. If you ever cannot play a card, you lose.`; }
+  if(S.tavern.length<=5 && !seenTips.lowDeck){ markTip('lowDeck'); return `The tavern deck runs low. Hearts (♥) shuffle discarded cards back underneath it — without them, the well runs dry.`; }
+  return `Select cards to strike ${enemyTitle()}. It has ${e.hp} health and hits for ${effAttack()}.`;
+}
+
+/* ---------- royal portraits ---------- */
+let moodOverride=null, moodTimer=null, lastArtKey='';
+function currentMood(){ return moodOverride || (S.phase==='defend' ? 'attack' : 'idle'); }
+function moodFlash(m,ms){
+  moodOverride=m; renderEnemyArt();
+  clearTimeout(moodTimer);
+  moodTimer=setTimeout(()=>{ if(moodOverride===m){ moodOverride=null; if(S.enemy) renderEnemyArt(); } },ms);
+}
+function royalSVG(rank,suit,mood){
+  const P={
+    '♥':{main:'#9b2335',dark:'#591020',trim:'#e8c46a',skin:'#f0c9a0',hair:'#5b2414',gem:'#d96a7f'},
+    '♦':{main:'#b87514',dark:'#6e4509',trim:'#ffe9a8',skin:'#edc197',hair:'#7a5523',gem:'#ffd24d'},
+    '♣':{main:'#3f5d3a',dark:'#1f3220',trim:'#c99b3f',skin:'#e5b98c',hair:'#33271a',gem:'#7fae6a'},
+    '♠':{main:'#2e3a52',dark:'#141b2a',trim:'#aab6c8',skin:'#d9b491',hair:'#1a1d26',gem:'#6d7f9c'}
+  }[suit];
+  const ink='#241a12';
+  let eyes='', mouth='', extra='';
+  if(mood==='idle'){
+    eyes=`<ellipse cx="42" cy="58" rx="4.2" ry="2.8" fill="#fff"/><circle cx="43.4" cy="58.6" r="1.7" fill="${ink}"/>
+      <rect x="37.5" y="54.4" width="9" height="2.8" fill="${P.skin}"/>
+      <ellipse cx="58" cy="58" rx="4.2" ry="2.8" fill="#fff"/><circle cx="56.6" cy="58.6" r="1.7" fill="${ink}"/>
+      <rect x="53.5" y="54.4" width="9" height="2.8" fill="${P.skin}"/>
+      <path d="M36.5 53.5 L47.5 56.3" stroke="${ink}" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M63.5 53.5 L52.5 56.3" stroke="${ink}" stroke-width="1.7" stroke-linecap="round"/>
+      <circle class="glint" cx="44.6" cy="57.6" r=".8" fill="#fff" opacity="0"/>`;
+    mouth=`<path d="M42.5 74 Q50 78 57.5 72" stroke="${ink}" stroke-width="1.9" fill="none" stroke-linecap="round"/>`;
+  } else if(mood==='attack'){
+    eyes=`<ellipse cx="42" cy="58" rx="4.4" ry="3.6" fill="#fff"/><circle cx="42.6" cy="58.8" r="1.4" fill="${ink}"/>
+      <ellipse cx="58" cy="58" rx="4.4" ry="3.6" fill="#fff"/><circle cx="57.4" cy="58.8" r="1.4" fill="${ink}"/>
+      <path d="M35.5 51.5 L48 56.8" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M64.5 51.5 L52 56.8" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>`;
+    mouth=`<ellipse cx="50" cy="76" rx="6.6" ry="5" fill="#3d0f15" stroke="${ink}" stroke-width="1.3"/>
+      <rect x="44.6" y="72.2" width="10.8" height="2.6" rx="1" fill="#fff"/>`;
+    extra=`<path d="M22 50 l-6 -3 M23 58 l-7 0 M78 50 l6 -3 M77 58 l7 0" stroke="${P.trim}" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>`;
+  } else if(mood==='pain'){
+    eyes=`<path d="M38 55.6 L46 59.4 M38 60.4 L46 56.6" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M62 55.6 L54 59.4 M62 60.4 L54 56.6" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M37 51 Q42 48.6 47 51" stroke="${ink}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M63 51 Q58 48.6 53 51" stroke="${ink}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+    mouth=`<path d="M43 76.5 Q46.5 73.5 50 76.5 Q53.5 79.5 57 76.5" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    extra=`<path d="M70 46 q3 4 0 6.5 q-3 -2.5 0 -6.5" fill="#bfe3ff" stroke="#7fb4d8" stroke-width=".7"/>`;
+  } else { // defeated
+    eyes=`<path d="M38.5 55.5 L45.5 60.5 M45.5 55.5 L38.5 60.5" stroke="${ink}" stroke-width="2.1" stroke-linecap="round"/>
+      <path d="M54.5 55.5 L61.5 60.5 M61.5 55.5 L54.5 60.5" stroke="${ink}" stroke-width="2.1" stroke-linecap="round"/>`;
+    mouth=`<path d="M44 75.5 L56 75.5" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/>
+      <ellipse cx="54" cy="78.6" rx="3" ry="2" fill="#e58a96" stroke="${ink}" stroke-width=".8"/>`;
+  }
+  // hair behind head, by rank
+  let hairBack='', gear='', face='';
+  if(rank==='Q'){
+    hairBack=`<path d="M31 50 Q24 70 28 96 Q34 100 38 94 Q33 72 36 54 Z" fill="${P.hair}"/>
+      <path d="M69 50 Q76 70 72 96 Q66 100 62 94 Q67 72 64 54 Z" fill="${P.hair}"/>`;
+  } else if(rank==='K'){
+    hairBack=`<path d="M32 54 Q28 70 32 80 L38 76 Q34 66 36 56 Z" fill="${P.hair}"/>
+      <path d="M68 54 Q72 70 68 80 L62 76 Q66 66 64 56 Z" fill="${P.hair}"/>`;
+  } else {
+    hairBack=`<path d="M32 52 Q30 62 33 68 L38 64 Q35 58 36 52 Z" fill="${P.hair}"/>
+      <path d="M68 52 Q70 62 67 68 L62 64 Q65 58 64 52 Z" fill="${P.hair}"/>`;
+  }
+  if(rank==='J'){
+    gear=`<g class="crown"><ellipse cx="50" cy="41" rx="23" ry="9.5" fill="${P.main}" stroke="${P.dark}" stroke-width="1.4" transform="rotate(-8 50 41)"/>
+      <circle cx="69" cy="35.5" r="4.2" fill="${P.trim}" stroke="${P.dark}" stroke-width="1"/>
+      <path d="M28 45 Q50 38 72 41" stroke="${P.trim}" stroke-width="2" fill="none"/>
+      <path d="M30 41 q-7 -9 -3 -16 q2 7 6 11" fill="${P.gem}" stroke="${P.dark}" stroke-width=".8"/></g>`;
+    face=`<path d="M34 50 Q42 45 48 49 M52 49 Q58 45 66 50" stroke="${P.hair}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+  } else if(rank==='Q'){
+    gear=`<g class="crown"><path d="M34 45 L38 32 L46 42.5 L50 28 L54 42.5 L62 32 L66 45 Z" fill="${P.trim}" stroke="${P.dark}" stroke-width="1.3"/>
+      <circle cx="38" cy="33.5" r="1.7" fill="${P.gem}"/><circle cx="50" cy="30" r="1.9" fill="${P.gem}"/><circle cx="62" cy="33.5" r="1.7" fill="${P.gem}"/>
+      <rect x="34" y="44" width="32" height="3.4" rx="1.5" fill="${P.main}" stroke="${P.dark}" stroke-width=".9"/></g>`;
+    face=`<path d="M33 52 Q40 46 50 47 Q60 46 67 52 L67 48 Q58 42 50 43 Q42 42 33 48 Z" fill="${P.hair}"/>
+      <circle cx="31" cy="66" r="1.6" fill="${P.gem}" stroke="${P.dark}" stroke-width=".6"/>
+      <circle cx="69" cy="66" r="1.6" fill="${P.gem}" stroke="${P.dark}" stroke-width=".6"/>`;
+  } else {
+    gear=`<g class="crown"><path d="M32 46 L32 31 L40 39.5 L50 27 L60 39.5 L68 31 L68 46 Z" fill="${P.trim}" stroke="${P.dark}" stroke-width="1.3"/>
+      <rect x="31" y="44" width="38" height="4.6" rx="2" fill="${P.main}" stroke="${P.dark}" stroke-width="1"/>
+      <path d="M47 41 L50 37 L53 41 L50 45 Z" fill="${P.gem}" stroke="${P.dark}" stroke-width=".8"/></g>`;
+    face=`<path d="M33 63 Q34 92 50 95 Q66 92 67 63 Q60 71 50 71 Q40 71 33 63 Z" fill="${P.hair}" stroke="${P.dark}" stroke-width=".7"/>
+      <path d="M50 69 Q43 68 39.5 72.5 M50 69 Q57 68 60.5 72.5" stroke="${P.hair}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }
+  // suit-specific touches
+  let suitExtra='';
+  if(suit==='♥') suitExtra=`<circle cx="38" cy="67" r="2.6" fill="#e58a96" opacity=".45"/><circle cx="62" cy="67" r="2.6" fill="#e58a96" opacity=".45"/>`;
+  if(suit==='♦' && rank==='J') suitExtra=`<circle cx="58" cy="58" r="6.4" fill="none" stroke="${P.trim}" stroke-width="1.3"/><path d="M58 64.4 L58 71" stroke="${P.trim}" stroke-width="1.1"/>`;
+  if(suit==='♣') suitExtra=`<ellipse cx="68" cy="42" rx="4.5" ry="2.2" fill="${P.gem}" stroke="${P.dark}" stroke-width=".7" transform="rotate(-35 68 42)"/>`;
+  if(suit==='♠') suitExtra=`<path d="M36.5 64 l3.5 6 M36 67.5 l4.5 -1" stroke="#7a2a32" stroke-width="1.2" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 100 124" aria-hidden="true">
+    <circle cx="50" cy="60" r="42" fill="${P.main}" opacity=".12"/>
+    <path d="M20 124 Q24 94 50 91 Q76 94 80 124 Z" fill="${P.main}" stroke="${P.dark}" stroke-width="1.4"/>
+    <path d="M39 94.5 L50 105 L61 94.5" stroke="${P.trim}" stroke-width="1.8" fill="none"/>
+    <text x="50" y="118" font-size="12" text-anchor="middle" fill="${P.trim}" font-family="serif" font-weight="bold">${suit}</text>
+    <rect x="45.5" y="80" width="9" height="11" fill="${P.skin}"/>
+    ${hairBack}
+    <circle cx="30.5" cy="62" r="3.2" fill="${P.skin}"/>
+    <circle cx="69.5" cy="62" r="3.2" fill="${P.skin}"/>
+    <ellipse cx="50" cy="62" rx="19.5" ry="22.5" fill="${P.skin}" stroke="#5e4630" stroke-width=".8"/>
+    ${face}
+    <path d="M50 60 Q53.4 65.5 50 68" stroke="#5e4630" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    ${suitExtra}
+    ${eyes}
+    ${mouth}
+    ${extra}
+    ${gear}
+  </svg>`;
+}
+function renderEnemyArt(){
+  const e=S.enemy; if(!e) return;
+  const mood=currentMood();
+  const key=e.id+'|'+mood;
+  if(key===lastArtKey) return;
+  lastArtKey=key;
+  const ec=$('enemyCard');
+  const keep=['struck','fade-out','fade-in'].filter(c=>ec.classList.contains(c)).join(' ');
+  ec.className=('enemy-card '+(RED(e.card.suit)?'red ':'')+keep).trim();
+  ec.innerHTML=`
+    <div class="corner tl">${e.card.rank}<br>${e.card.suit}</div>
+    <div class="royal-art ${mood}">${royalSVG(e.card.rank,e.card.suit,mood)}</div>
+    <div class="royal-name">${ROYAL[e.card.rank].name} of ${SUITNAME[e.card.suit]}</div>
+    <div class="corner br">${e.card.rank}<br>${e.card.suit}</div>
+    <div class="immune-ribbon" title="Immune to ${SUITNAME[e.card.suit]}: ${IMMUNE_TEXT[e.card.suit]}">Immune <span class="rs">${e.card.suit}</span></div>`;
+  $('immuneNote').innerHTML=`<b>Immune to ${SUITNAME[e.card.suit]}:</b> ${IMMUNE_TEXT[e.card.suit]}`;
+}
+
+/* ---------- stat animation helpers ---------- */
+function pulse(el,cls){ el.classList.remove('hit','good'); void el.offsetWidth; el.classList.add(cls); }
+function tweenNum(el, from, to, ms=450){
+  if(from===null || from===to || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+    el.textContent=to; return;
+  }
+  const t0=performance.now();
+  (function step(t){
+    const p=Math.min(1,(t-t0)/ms);
+    el.textContent=Math.round(from+(to-from)*p);
+    if(p<1) requestAnimationFrame(step);
+  })(t0);
+}
+function floatNum(txt, gold){
+  const zone=document.querySelector('.enemy-zone');
+  const d=document.createElement('div');
+  d.className='float-num'+(gold?' gold':'');
+  d.textContent=txt;
+  zone.appendChild(d);
+  setTimeout(()=>d.remove(),1000);
+}
+
+/* ---------- rendering ---------- */
+function cardEl(c, opts={}){
+  const d=document.createElement('div');
+  d.className='card'+(RED(c.suit)?' red':'')+(opts.small?' small':'');
+  const v=cardValue(c);
+  d.innerHTML=`<div class="c">${c.rank}<br>${c.suit}</div>
+               <div class="mid ${'JQK'.includes(c.rank)?'royal':''}">${'JQK'.includes(c.rank)?c.rank:c.suit}</div>
+               <div class="c2">${c.rank}<br>${c.suit}</div>`;
+  if(!opts.small){
+    d.tabIndex=0;
+    d.setAttribute('role','button');
+    d.setAttribute('aria-label',`${c.rank} of ${SUITNAME[c.suit]}, value ${v}`);
+  }
+  return d;
+}
+
+function jesterSVG(){
+  return `<svg viewBox="0 0 56 80" aria-hidden="true">
+    <path d="M14 34 Q8 18 18 12 Q20 24 26 26 Z" fill="#9b2335" stroke="#591020" stroke-width="1"/>
+    <path d="M42 34 Q48 18 38 12 Q36 24 30 26 Z" fill="#3f5d3a" stroke="#1f3220" stroke-width="1"/>
+    <path d="M18 34 Q28 22 38 34 Z" fill="#c99b3f" stroke="#6e521b" stroke-width="1"/>
+    <circle cx="17" cy="13" r="2.6" fill="#e8c46a" stroke="#6e521b" stroke-width=".8"/>
+    <circle cx="39" cy="13" r="2.6" fill="#e8c46a" stroke="#6e521b" stroke-width=".8"/>
+    <ellipse cx="28" cy="44" rx="11" ry="12" fill="#f0c9a0" stroke="#5e4630" stroke-width=".8"/>
+    <circle cx="24" cy="42" r="1.4" fill="#241a12"/>
+    <circle cx="32" cy="42" r="1.4" fill="#241a12"/>
+    <path d="M22 48 Q28 53 34 48" stroke="#241a12" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M16 60 L22 66 L28 60 L34 66 L40 60 L40 72 L16 72 Z" fill="#9b2335" stroke="#591020" stroke-width="1"/>
+    <circle cx="22" cy="66" r="1.6" fill="#e8c46a"/>
+    <circle cx="34" cy="66" r="1.6" fill="#e8c46a"/>
+    <text x="28" y="79" font-size="7" text-anchor="middle" fill="#6e521b" font-family="serif" font-style="italic">Jester</text>
+  </svg>`;
+}
+let prevPiles={t:-1,d:-1};
+function renderPiles(){
+  const tp=$('tavernPile'); tp.innerHTML='';
+  if(S.tavern.length===0) tp.innerHTML='<div class="empty-slot"></div>';
+  else{
+    const n=S.tavern.length>20?3:(S.tavern.length>6?2:1);
+    for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='cardback s'+i; tp.appendChild(d); }
+  }
+  tp.insertAdjacentHTML('beforeend',`<div class="pile-badge${S.tavern.length!==prevPiles.t&&prevPiles.t>=0?' bump':''}">${S.tavern.length}</div>`);
+  tp.title=`Tavern deck — ${S.tavern.length} cards to draw`;
+  const dp=$('discardPile'); dp.innerHTML='';
+  if(S.discard.length===0){ dp.innerHTML='<div class="empty-slot"></div>'; dp.title='Discard pile — empty'; }
+  else{
+    const top=S.discard[S.discard.length-1];
+    const el=cardEl(top,{small:true}); el.classList.add('discard-top');
+    dp.appendChild(el);
+    dp.title=`Discard pile — ${S.discard.length} cards, ${top.rank}${top.suit} on top. Hearts shuffle cards from here under the tavern deck.`;
+  }
+  dp.insertAdjacentHTML('beforeend',`<div class="pile-badge${S.discard.length!==prevPiles.d&&prevPiles.d>=0?' bump':''}">${S.discard.length}</div>`);
+  const jp=$('jesterPile'); jp.innerHTML='';
+  for(let i=0;i<2;i++){
+    const spent=i>=S.jesters;
+    jp.insertAdjacentHTML('beforeend',
+      `<div class="jester-card${spent?' spent':''}" title="${spent?'Jester — already flipped':'Jester — flip to discard your hand and draw 8 fresh cards'}">${jesterSVG()}</div>`);
+  }
+  prevPiles={t:S.tavern.length, d:S.discard.length};
+}
+function render(){
+  const e=S.enemy;
+  // header
+  $('deckCount').textContent=S.tavern.length;
+  $('discardCount').textContent=S.discard.length;
+  $('jesterCount').textContent=S.jesters;
+  renderPiles();
+  const track=$('castleTrack'); track.innerHTML='';
+  const labels=['J','J','J','J','Q','Q','Q','Q','K','K','K','K'];
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');
+    const slainCard = i<S.slain ? S.slainCards[i] : null;
+    p.className='pip'+(slainCard?' slain'+(RED(slainCard.suit)?' red':''):'')+(i===S.slain && !S.over?' current':'');
+    if(slainCard){
+      p.innerHTML=`<span>${slainCard.rank}</span><span class="ps">${slainCard.suit}</span>`;
+      p.title=`${ROYAL[slainCard.rank].name} of ${SUITNAME[slainCard.suit]} — slain`;
+    } else {
+      p.textContent=labels[i];
+    }
+    track.appendChild(p);
+  }
+  // enemy
+  renderEnemyArt();
+  const hpNow=Math.max(0,e.hp), atkNow=effAttack(), sh=shieldNow();
+  const hpEl=$('enemyHealth');
+  $('enemyAttack').innerHTML = `<span id="atkNum">${atkNow}</span>` + (sh>0?` <span class="dim">(${e.atk}−${sh}♠)</span>`:'');
+  if(animPrev.key===e.id){
+    if(hpNow!==animPrev.hp){ tweenNum(hpEl,animPrev.hp,hpNow); pulse(hpEl, hpNow<animPrev.hp?'hit':'good'); }
+    else hpEl.textContent=hpNow;
+    if(atkNow!==animPrev.atk){ tweenNum($('atkNum'),animPrev.atk,atkNow); pulse($('enemyAttack'), atkNow<animPrev.atk?'good':'hit'); }
+  } else {
+    hpEl.textContent=hpNow;
+  }
+  animPrev={key:e.id, hp:hpNow, atk:atkNow};
+  $('healthFill').style.width=(Math.max(0,e.hp)/ROYAL[e.card.rank].hp*100)+'%';
+  // played area
+  const pa=$('playedArea'); pa.innerHTML='';
+  if(e.played.length===0) pa.innerHTML='<span class="placeholder">No cards played yet.</span>';
+  else e.played.forEach(c=>pa.appendChild(cardEl(c,{small:true})));
+  // action bar
+  const defend=S.phase==='defend';
+  $('phaseBanner').textContent=defend?'The royal strikes!':'Your move';
+  $('playBtn').classList.toggle('hidden',defend);
+  $('discardBtn').classList.toggle('hidden',!defend);
+  $('jesterBtn').disabled = S.jesters<=0 || S.tavern.length===0 || S.over || S.busy;
+  $('jesterBtn').textContent = `Flip a Jester (${S.jesters})`;
+  const sel=selectedCards();
+  $('playBtn').disabled = !validPlay(sel).ok || S.over || S.busy;
+  if(defend){
+    const total=sel.reduce((t,c)=>t+cardValue(c),0);
+    const need=effAttack();
+    $('defendMeter').classList.remove('hidden');
+    $('defendMeter').innerHTML=`Sacrifice: <b>${total}</b> / ${need} needed`;
+    $('discardBtn').disabled = total<need;
+  } else $('defendMeter').classList.add('hidden');
+  // hand
+  const h=$('hand'); h.innerHTML='';
+  S.hand.forEach((c,i)=>{
+    const el=cardEl(c);
+    if(S.selected.has(i)) el.classList.add('sel');
+    const toggle=()=>{
+      if(S.over || S.busy) return;
+      if(S.selected.has(i)){ S.selected.delete(i); A.sfx.deselect(); }
+      else { S.selected.add(i); A.sfx.select(); }
+      render();
+    };
+    el.addEventListener('click',toggle);
+    el.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); toggle(); }});
+    h.appendChild(el);
+  });
+  if(S.hand.length===0) h.innerHTML='<span class="placeholder" style="font-style:italic;opacity:.7">Your hand is empty.</span>';
+  const hv=S.hand.reduce((t,c)=>t+cardValue(c),0);
+  $('handInfo').textContent=`${S.hand.length} / ${HAND_MAX} cards · total value ${hv}`;
+  renderTip();
+}
+
+function renderTip(){
+  $('tipText').innerHTML=currentTip();
+  // live preview
+  const pb=$('previewBox');
+  const sel=selectedCards();
+  if(S.phase!=='play' || sel.length===0 || S.over){ pb.innerHTML=''; return; }
+  const pv=computePreview(sel);
+  if(!pv.valid.ok){ pb.innerHTML=`<div class="pv warn"><span class="ic">✕</span><span>Not a legal play.</span></div>`; return; }
+  const rows=[];
+  rows.push(`<div class="pv"><span class="ic">⚔</span><span><strong>${pv.damage}</strong> damage${pv.clubs&&!pv.clubs.blocked?' (doubled by ♣)':''}</span></div>`);
+  if(pv.hearts) rows.push(`<div class="pv ${pv.hearts.blocked?'nope':''}"><span class="ic">♥</span><span>heal ${Math.min(pv.hearts.amt,S.discard.length)} from the discard</span></div>`);
+  if(pv.diamonds) rows.push(`<div class="pv ${pv.diamonds.blocked?'nope':''}"><span class="ic">♦</span><span>draw up to ${pv.diamonds.amt} cards</span></div>`);
+  if(pv.spades) rows.push(`<div class="pv ${pv.spades.blocked?'nope':''}"><span class="ic">♠</span><span>shield +${pv.spades.amt} vs counterattack</span></div>`);
+  pb.innerHTML=rows.join('');
+}
+
+function log(html, cls=''){
+  const p=document.createElement('p');
+  if(cls) p.className=cls;
+  p.innerHTML=html;
+  const l=$('log');
+  l.appendChild(p);
+  l.scrollTop=l.scrollHeight;
+}
+
+/* ---------- wiring ---------- */
+$('playBtn').addEventListener('click',()=>{ if(S.phase==='play'&&!S.over&&!S.busy) playSelected(); });
+$('jesterBtn').addEventListener('click',()=>{ if(!S.over&&!S.busy) flipJester(); });
+$('discardBtn').addEventListener('click',()=>{ if(S.phase==='defend'&&!S.over&&!S.busy) confirmDiscard(); });
+$('tipsToggle').addEventListener('change',e=>{ tipsOn=e.target.checked; renderTip(); });
+$('rulesBtn').addEventListener('click',()=>$('rulesModal').classList.remove('hidden'));
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal-back').classList.add('hidden')));
+$('restartBtn').addEventListener('click',()=>{ $('log').innerHTML=''; seenTips={}; animPrev={key:-1,hp:null,atk:null}; newGame(); render(); });
+$('endRestartBtn').addEventListener('click',()=>{ $('endModal').classList.add('hidden'); $('log').innerHTML=''; seenTips={}; animPrev={key:-1,hp:null,atk:null}; newGame(); render(); });
+$('startBtn').addEventListener('click',()=>{ $('introModal').classList.add('hidden'); A.unlock(); });
+$('musicBtn').addEventListener('click',()=>{
+  A.unlock(); A.setMusic(!A.musicOn);
+  $('musicBtn').setAttribute('aria-pressed',A.musicOn);
+  $('musicBtn').classList.toggle('muted',!A.musicOn);
+});
+$('sfxBtn').addEventListener('click',()=>{
+  A.unlock(); A.setSfx(!A.sfxOn);
+  $('sfxBtn').setAttribute('aria-pressed',A.sfxOn);
+  $('sfxBtn').classList.toggle('muted',!A.sfxOn);
+});
+document.addEventListener('pointerdown',()=>A.unlock(),{once:true});
+document.querySelectorAll('.modal-back').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m && m.id==='rulesModal') m.classList.add('hidden'); }));
+
+newGame();
+render();
+})();
+</script>
+</body>
+</html>
