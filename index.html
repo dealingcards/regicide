@@ -10,6 +10,9 @@
 <meta property="og:title" content="Regicide — Slay the Corrupted Court">
 <meta property="og:description" content="Battle 12 corrupted royals armed only with a deck of cards. Same daily castle for everyone — can you reach a Gold victory?">
 <!-- When hosted, add: <meta property="og:image" content="https://your-domain/preview.png"> and og:url -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta property="og:image" content="preview.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2343121d'/%3E%3Cpath d='M6 24 L6 11 L12 17 L16 7 L20 17 L26 11 L26 24 Z' fill='%23e8c46a' stroke='%236e521b' stroke-width='1.4'/%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap');
@@ -645,10 +648,27 @@ const A = (() => {
     }
     if(beat%16===0 && Math.random()<.5) melIdx=4; // drift home
   }
-  function startMusic(){
-    if(!ensure()||started) return;
-    started=true; startDrone();
+  let fileMusic=null;
+  function startSynth(){
+    if(!ensure()) return;
+    startDrone();
     musicTimer=setInterval(()=>{ if(musicOn && ctx.state==='running') tickMusic(); },550);
+  }
+  function startMusic(){
+    if(started) return;
+    started=true;
+    // Prefer the pre-rendered track if it's hosted alongside the page;
+    // otherwise fall back to the live generative synth.
+    let fellBack=false;
+    const fallback=()=>{ if(fellBack) return; fellBack=true; fileMusic=null; startSynth(); };
+    try{
+      fileMusic=new Audio('regicide-music.mp3');
+      fileMusic.loop=true;
+      fileMusic.volume=0.55;
+      fileMusic.addEventListener('error',fallback);
+      const pr=fileMusic.play();
+      if(pr && pr.catch) pr.catch(fallback);
+    }catch(e){ fallback(); }
   }
   function unlock(){
     if(!ensure()) return;
@@ -657,8 +677,13 @@ const A = (() => {
   }
   function setMusic(on){
     musicOn=on;
+    if(on && !started){ startMusic(); return; }
+    if(fileMusic){
+      if(on){ fileMusic.volume=0.55; const pr=fileMusic.play(); if(pr&&pr.catch) pr.catch(()=>{}); }
+      else fileMusic.pause();
+      return;
+    }
     if(!ensure()) return;
-    if(on && !started) startMusic();
     musicBus.gain.linearRampToValueAtTime(on?.3:0, ctx.currentTime+.35);
   }
   return { unlock, sfx, setMusic, setSfx:on=>{sfxOn=on;}, get musicOn(){return musicOn;}, get sfxOn(){return sfxOn;} };
@@ -1480,6 +1505,11 @@ $('sfxBtn').addEventListener('click',()=>{
 });
 document.addEventListener('pointerdown',()=>A.unlock(),{once:true});
 document.querySelectorAll('.modal-back').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m && (m.id==='rulesModal'||m.id==='lbModal')) m.classList.add('hidden'); }));
+
+try{
+  if('serviceWorker' in navigator && location.protocol==='https:')
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+}catch(e){}
 
 (function initialDeal(){
   let seedParam=null;
