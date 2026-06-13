@@ -70,7 +70,7 @@ h1 .sub{display:block;font-family:var(--body); font-size:.78rem; letter-spacing:
 .counter{ text-align:center; min-width:64px;}
 .counter .num{font-family:var(--display); font-size:1.5rem; color:var(--gilt-bright); line-height:1;}
 .counter .lbl{font-size:.64rem; letter-spacing:.22em; text-transform:uppercase; color:var(--parchment-shade);}
-.header-btns{display:flex; gap:8px;}
+.header-btns{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
 
 /* ---------- buttons ---------- */
 button{
@@ -323,6 +323,15 @@ button.muted{opacity:.5;}
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important; transition:none !important;}
 }
+@media (max-width:640px){
+  header{justify-content:center; row-gap:10px;}
+  h1{width:100%; text-align:center;}
+  .castle-track{justify-content:center;}
+  .counters{justify-content:center;}
+  .header-btns{width:100%; justify-content:center;}
+  .header-btns button{padding:7px 11px; font-size:.84rem;}
+  .btn-txt{display:none;}
+}
 @media (max-width:560px){
   h1{font-size:1.7rem;}
   .card{width:64px; height:92px;}
@@ -369,8 +378,8 @@ button:disabled{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2F
     <div class="counter"><div class="num" id="jesterCount">2</div><div class="lbl">Jesters</div></div>
   </div>
   <div class="header-btns">
-    <button class="ghost" id="musicBtn" aria-pressed="true" title="Toggle music">&#9834; Music</button>
-    <button class="ghost" id="sfxBtn" aria-pressed="true" title="Toggle sound effects">&#128266; SFX</button>
+    <button class="ghost" id="musicBtn" aria-pressed="true" title="Toggle music">&#9834;<span class="btn-txt"> Music</span></button>
+    <button class="ghost" id="sfxBtn" aria-pressed="true" title="Toggle sound effects">&#128266;<span class="btn-txt"> SFX</span></button>
     <button class="ghost" id="rulesBtn">Rules</button>
     <button class="ghost hidden" id="lbHeaderBtn">Leaderboard</button>
     <button class="ghost" id="dailyBtn" title="The same shuffle for everyone, changing each day">Daily castle</button>
@@ -520,6 +529,7 @@ button:disabled{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2F
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
 (() => {
 'use strict';
@@ -536,11 +546,12 @@ const IMMUNE_TEXT = {
 const HAND_MAX = 8;
 
 /* ---------- global leaderboard (optional) ----------
-   Paste your Cloudflare Worker URL between the quotes to switch the
-   Daily Castle leaderboard on, e.g.:
-   const LEADERBOARD_URL = 'https://regicide-leaderboard.yourname.workers.dev';
-   Leave it empty ('') and the leaderboard UI stays hidden. */
-const LEADERBOARD_URL = 'https://regicide-leaderboard.donsibley01.workers.dev';
+   The Worker URL is read from a separate config.js file kept in the
+   same folder as this page, so updating this file never loses it.
+   (If no config.js exists, the fallback '' below applies and the
+   leaderboard UI stays hidden.) */
+const LEADERBOARD_URL =
+  (window.REGICIDE_CONFIG && window.REGICIDE_CONFIG.leaderboardUrl) || '';
 
 /* ---------- audio engine (all synthesized, no files) ---------- */
 const A = (() => {
